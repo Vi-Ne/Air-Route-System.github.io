@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Route Management & Baggage Handling System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        /* Container Styling */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2rem;
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #555;
+        }
+        .content {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .column {
+            flex: 1;
+        }
+        .column h3 {
+            font-size: 1.3rem;
+            color: #007bff;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            display: inline-block;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        ul li {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        ul li::before {
+            content: "•";
+            color: #007bff;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flight Route Management & Baggage Handling System</h1>
+        <p>Optimizes flight paths and baggage processing, ensuring efficient routing, scheduling, and handling of passengers’ baggage.</p>
+        <div class="content">
+            <!-- Flight Route Management Section -->
+            <div class="column">
+                <h3>Flight Route Management - Data Structures</h3>
+                <ul>
+                    <li>Adjacency</li>
+                    <li>Graph</li>
+                    <li>Matrix/List</li>
+                </ul>
+                <h3>Flight Route Management - Algorithms</h3>
+                <ul>
+                    <li>Floyd-Warshall Algorithm</li>
+                    <li>Dijkstra’s Algorithm</li>
+                    <li>Kruskal’s Algorithm</li>
+                </ul>
+            </div>
+            <!-- Baggage Handling Section -->
+            <div class="column">
+                <h3>Baggage Handling - Data Structures</h3>
+                <ul>
+                    <li>Hashing</li>
+                    <li>Priority Queue</li>
+                </ul>
+                <h3>Baggage Handling - Algorithms</h3>
+                <ul>
+                    <li>Hashing Algorithm</li>
+                    <li>Queue Algorithm</li>
+                    <li>Sorting Algorithm</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
