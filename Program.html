@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C++ Code Compiler</title>
+    <title>C++ Code Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
     <style>
         body {
@@ -15,11 +15,6 @@
             height: 300px;
             border: 1px solid #ccc;
         }
-        button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
         pre {
             background: #f4f4f4;
             padding: 10px;
@@ -28,20 +23,6350 @@
     </style>
 </head>
 <body>
-    <h1>C++ Code Compiler</h1>
+    <h1>C++ Code Viewer</h1>
     <div id="editor">// Enter your C++ code here
 #include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <queue>
+#include <stack>
+#include <algorithm>
+#include <list>
+#include <string>
+#include <map>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <climits>
+#include <conio.h>
+
+
 using namespace std;
 
-int main() {
-    int a, b;
-    cout << "Enter two numbers: ";
-    cin >> a >> b;
-    cout << "The sum is: " << a + b << endl;
+class Flight
+{
+
+public:
+    string origin;
+    string destination;
+    string date;
+    string time;
+    string airline;
+    int distance; // Distance in kilometers
+    string scheduledTime; // Scheduled departure time
+
+    Flight(string origin, string destination, string date, string time, string airline, int distance, string scheduledTime)
+        : origin(origin), destination(destination), date(date), time(time), airline(airline), distance(distance), scheduledTime(scheduledTime) {}
+
+    void display() const
+    {
+
+        cout << "Origin: " << origin << ", Destination: " << destination
+             << ", Date: " << date << ", Time: " << time
+             << ", Airline: " << airline << ", Distance: " << distance << " km"
+             << ", Scheduled Time: " << scheduledTime << endl;
+
+    }
+
+    int getDistance() const { return distance; }
+
+    bool isDelayed() const
+    {
+
+        // Assuming time format is "HH:MM" and comparing times
+        int scheduledHour = stoi(scheduledTime.substr(0, 2));
+        int scheduledMinute = stoi(scheduledTime.substr(3, 2));
+        int actualHour = stoi(time.substr(0, 2));
+        int actualMinute = stoi(time.substr(3, 2));
+
+        int scheduledTotalMinutes = scheduledHour * 60 + scheduledMinute;
+        int actualTotalMinutes = actualHour * 60 + actualMinute;
+
+        return actualTotalMinutes > scheduledTotalMinutes + 30;
+
+    }
+
+    static bool compareByOrigin(const Flight &f1, const Flight &f2)
+    {
+
+        return f1.origin < f2.origin;
+    }
+
+    static bool compareByDestination(const Flight &f1, const Flight &f2)
+    {
+
+        return f1.destination < f2.destination;
+
+    }
+
+    static bool compareByDate(const Flight &f1, const Flight &f2)
+    {
+
+        if (f1.date != f2.date)
+        {
+
+            return f1.date < f2.date;
+
+        }
+        return f1.time < f2.time;
+
+    }
+
+    static bool compareByAirline(const Flight &f1, const Flight &f2)
+    {
+
+        return f1.airline < f2.airline;
+
+    }
+
+};
+
+class FlightInformationSystem
+{
+
+private:
+
+    unordered_map<string, vector<Flight>> flightData;
+    unordered_map<string, list<string>> flightRoutes;
+
+public:
+    void addFlight(const Flight &flight)
+    {
+
+        if (flightData.find(flight.origin) == flightData.end())
+        {
+
+            flightData[flight.origin] = vector<Flight>();
+
+        }
+
+        bool isDuplicate = false;
+
+        for (const auto &existingFlight : flightData[flight.origin])
+        {
+
+            if (existingFlight.destination == flight.destination &&
+                existingFlight.date == flight.date &&
+                existingFlight.time == flight.time)
+            {
+
+                isDuplicate = true;
+                break;
+
+            }
+
+        }
+
+        if (!isDuplicate)
+        {
+
+            flightData[flight.origin].push_back(flight);
+            sort(flightData[flight.origin].begin(), flightData[flight.origin].end(), Flight::compareByDate);
+
+        }
+        else
+        {
+
+            cout << "Warning: Duplicate flight found. Flight not added.\n";
+
+        }
+
+    }
+
+    void displayAllFlights()
+    {
+
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                flight.display();
+
+            }
+
+        }
+
+    }
+
+    void searchFlightsByOriginAndDestination(const string &origin, const string &destination)
+    {
+
+        bool found = false;
+
+        for (const auto &flight : flightData[origin])
+        {
+
+            if (flight.destination == destination)
+            {
+
+                flight.display();
+                found = true;
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No flights found for this route." << endl;
+
+        }
+
+    }
+
+    void sortFlights(int choice)
+    {
+        vector<Flight> allFlights;
+
+        for (const auto &entry : flightData)
+        {
+
+            allFlights.insert(allFlights.end(), entry.second.begin(), entry.second.end());
+
+        }
+
+        switch (choice)
+        {
+
+            case 1:
+
+                sort(allFlights.begin(), allFlights.end(), Flight::compareByOrigin);
+                break;
+
+            case 2:
+
+                sort(allFlights.begin(), allFlights.end(), Flight::compareByDestination);
+                break;
+
+            case 3:
+
+                sort(allFlights.begin(), allFlights.end(), Flight::compareByDate);
+                break;
+
+            case 4:
+
+                sort(allFlights.begin(), allFlights.end(), Flight::compareByAirline);
+                break;
+
+            default:
+
+                cout << "Invalid choice!" << endl;
+                return;
+
+        }
+
+        for (const Flight &f : allFlights)
+        {
+
+            f.display();
+
+        }
+
+    }
+
+    void addRoute(const string &origin, const string &destination)
+    {
+
+        flightRoutes[origin].push_back(destination);
+
+    }
+
+    void displayRoutes()
+    {
+
+        for (const auto &entry : flightRoutes)
+        {
+
+            cout << "Routes from " << entry.first << ": ";
+            for (const auto &dest : entry.second)
+            {
+
+                cout << dest << " ";
+
+            }
+
+            cout << endl;
+        }
+    }
+
+    void findRoutesBFS(const string &start)
+    {
+
+        cout << "BFS Traversal starting from " << start << ":" << endl;
+        unordered_map<string, bool> visited;
+        queue<string> q;
+        q.push(start);
+        visited[start] = true;
+
+
+        while (!q.empty())
+        {
+
+            string current = q.front();
+            q.pop();
+            cout << current << " ";
+
+
+            for (const string &neighbor : flightRoutes[current])
+            {
+
+                if (!visited[neighbor])
+                {
+
+                    visited[neighbor] = true;
+                    q.push(neighbor);
+
+                }
+
+            }
+
+        }
+
+        cout << endl;
+    }
+
+    void findRoutesDFS(const string &start)
+    {
+
+        cout << "DFS Traversal starting from " << start << ":" << endl;
+        unordered_map<string, bool> visited;
+        stack<string> s;
+        s.push(start);
+        visited[start] = true;
+
+        while (!s.empty())
+        {
+
+            string current = s.top();
+            s.pop();
+            cout << current << " ";
+
+            for (const string &neighbor : flightRoutes[current])
+            {
+
+                if (!visited[neighbor])
+                {
+
+                    visited[neighbor] = true;
+                    s.push(neighbor);
+
+                }
+
+            }
+
+        }
+
+        cout << endl;
+    }
+
+    void removeFlight(const string &origin, const string &destination, const string &date, const string &time)
+    {
+
+        auto &flights = flightData[origin];
+        for (auto it = flights.begin(); it != flights.end(); ++it)
+        {
+
+            if (it->destination == destination && it->date == date && it->time == time)
+            {
+
+                flights.erase(it);
+                cout << "Flight removed successfully.\n";
+                return;
+
+            }
+
+        }
+
+
+        cout << "Flight not found.\n";
+    }
+
+    void updateFlightTime(const string &origin, const string &destination, const string &date, const string &oldTime, const string &newTime)
+    {
+
+        auto &flights = flightData[origin];
+        for (auto &flight : flights)
+        {
+
+            if (flight.destination == destination && flight.date == date && flight.time == oldTime)
+            {
+
+                flight.time = newTime;
+                cout << "Flight time updated successfully.\n";
+                return;
+
+            }
+
+        }
+
+
+        cout << "Flight not found.\n";
+
+    }
+
+    void listFlightsByDate(const string &date)
+    {
+
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.date == date)
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+            cout << "No flights found on this date.\n";
+        }
+    }
+
+    void listFlightsByAirline(const string &airline)
+    {
+
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.airline == airline)
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+            cout << "No flights found for this airline.\n";
+        }
+    }
+
+    void findShortestRoute(const string &start, const string &end)
+    {
+
+        unordered_map<string, string> previous;
+        unordered_map<string, bool> visited;
+        queue<string> q;
+        q.push(start);
+        visited[start] = true;
+
+        while (!q.empty())
+        {
+
+            string current = q.front();
+            q.pop();
+
+            if (current == end)
+            {
+
+                stack<string> path;
+                for (string at = end; at != ""; at = previous[at])
+                {
+
+                    path.push(at);
+
+                }
+                cout << "Shortest route: ";
+                while (!path.empty())
+                {
+
+                    cout << path.top();
+                    path.pop();
+                    if (!path.empty()) cout << " -> ";
+
+                }
+                cout << endl;
+                return;
+
+            }
+
+            for (const string &neighbor : flightRoutes[current])
+            {
+
+                if (!visited[neighbor])
+                {
+
+                    visited[neighbor] = true;
+                    previous[neighbor] = current;
+                    q.push(neighbor);
+
+                }
+
+            }
+
+        }
+        cout << "No route found from " << start << " to " << end << ".\n";
+    }
+
+    void searchFlightsByAirlineAndDate(const string &airline, const string &date)
+    {
+
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.airline == airline && flight.date == date)
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+            cout << "No flights found for airline " << airline << " on " << date << ".\n";
+        }
+    }
+
+    void updateFlightDestination(const string &origin, const string &date, const string &time, const string &newDestination)
+    {
+
+        auto &flights = flightData[origin];
+        for (auto &flight : flights)
+        {
+
+            if (flight.date == date && flight.time == time)
+            {
+
+                flight.destination = newDestination;
+                cout << "Flight destination updated successfully.\n";
+                return;
+
+            }
+
+        }
+        cout << "Flight not found.\n";
+
+    }
+
+    int countFlightsByOrigin(const string &origin)
+    {
+
+        if (flightData.find(origin) != flightData.end())
+        {
+
+            return flightData[origin].size();
+
+        }
+        return 0;
+
+    }
+
+    // New functions for additional features
+
+    void listShortDistanceFlights(int maxDistance = 500)
+    {
+
+        cout << "Short Distance Flights (distance <= " << maxDistance << " km):\n";
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.getDistance() <= maxDistance)
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No short distance flights found.\n";
+
+        }
+    }
+
+    void listLongDistanceFlights(int minDistance = 2000)
+    {
+
+        cout << "Long Distance Flights (distance >= " << minDistance << " km):\n";
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.getDistance() >= minDistance)
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No long distance flights found.\n";
+
+        }
+
+    }
+
+    void listLoungeAccessFlights(const string &airline)
+    {
+
+        cout << "Flights with lounge access for airline " << airline << ":\n";
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.airline == airline)
+                {
+
+                    if (airline == "Emirates" || airline == "Qatar Airways" || airline == "Singapore Airlines")
+                    {
+
+                        flight.display();
+                        found = true;
+
+                    }
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No flights with lounge access found for airline " << airline << ".\n";
+
+        }
+    }
+
+    void listPrivateJetFlights()
+    {
+
+        cout << "Private Jet Flights:\n";
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.airline.find("Private") != string::npos)
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No private jet flights found.\n";
+
+        }
+
+    }
+
+    void countDelayedFlights()
+    {
+
+        int count = 0;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.isDelayed())
+                {
+
+                    count++;
+
+                }
+
+            }
+
+        }
+
+        cout << "Number of delayed flights: " << count << endl;
+
+    }
+
+    void showDelayedFlights()
+    {
+
+        cout << "Delayed Flights:\n";
+        bool found = false;
+        for (const auto &entry : flightData)
+        {
+
+            for (const auto &flight : entry.second)
+            {
+
+                if (flight.isDelayed())
+                {
+
+                    flight.display();
+                    found = true;
+
+                }
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No delayed flights found.\n";
+
+        }
+
+    }
+
+};
+
+
+// Predefined flight information and routes
+void initializeSystem(FlightInformationSystem &system)
+{
+    // Adding sample flights
+system.addFlight(Flight("New York", "Chicago", "10/01/2024", "09:00", "American Airlines", 1200, "08:00"));
+system.addFlight(Flight("Los Angeles", "Chicago", "10/01/2024", "12:00", "United Airlines", 2800, "11:00"));
+system.addFlight(Flight("Chicago", "New York", "10/01/2024", "14:00", "JetBlue", 1200, "13:00"));
+system.addFlight(Flight("Los Angeles", "New York", "10/01/2024", "16:00", "Delta", 2800, "15:00"));
+system.addFlight(Flight("Mumbai", "Delhi", "10/01/2024", "10:00", "Air India", 1400, "09:00"));
+system.addFlight(Flight("Delhi", "Mumbai", "10/01/2024", "13:00", "IndiGo", 1400, "12:00"));
+system.addFlight(Flight("Bangalore", "Hyderabad", "10/01/2024", "15:00", "SpiceJet", 570, "14:00"));
+system.addFlight(Flight("Hyderabad", "Bangalore", "10/01/2024", "18:00", "AirAsia", 570, "17:00"));
+system.addFlight(Flight("Kolkata", "Chennai", "10/01/2024", "20:00", "GoAir", 1360, "19:00"));
+system.addFlight(Flight("Chennai", "Kolkata", "10/01/2024", "22:00", "Vistara", 1360, "21:00"));
+system.addFlight(Flight("London", "Paris", "10/01/2024", "08:00", "British Airways", 340, "07:30"));
+system.addFlight(Flight("Paris", "London", "10/01/2024", "10:00", "Air France", 340, "09:30"));
+system.addFlight(Flight("Dubai", "Mumbai", "10/01/2024", "12:00", "Emirates", 1920, "11:00"));
+system.addFlight(Flight("Mumbai", "Dubai", "10/01/2024", "15:00", "Etihad", 1920, "14:00"));
+system.addFlight(Flight("Singapore", "Delhi", "10/01/2024", "17:00", "Singapore Airlines", 4150, "16:00"));
+system.addFlight(Flight("Delhi", "Singapore", "10/01/2024", "20:00", "SilkAir", 4150, "19:00"));
+system.addFlight(Flight("Sydney", "Melbourne", "10/01/2024", "08:00", "Qantas", 880, "07:00"));
+system.addFlight(Flight("Melbourne", "Sydney", "10/01/2024", "10:00", "Virgin Australia", 880, "09:00"));
+system.addFlight(Flight("Toronto", "Vancouver", "10/01/2024", "12:00", "Air Canada", 3360, "11:00"));
+system.addFlight(Flight("Vancouver", "Toronto", "10/01/2024", "15:00", "WestJet", 3360, "14:00"));
+system.addFlight(Flight("Tokyo", "Osaka", "10/01/2024", "07:00", "ANA", 515, "06:00"));
+system.addFlight(Flight("Osaka", "Tokyo", "10/01/2024", "09:00", "Japan Airlines", 515, "08:00"));
+system.addFlight(Flight("Beijing", "Shanghai", "10/01/2024", "11:00", "China Eastern", 1210, "10:00"));
+system.addFlight(Flight("Shanghai", "Beijing", "10/01/2024", "14:00", "Air China", 1210, "13:00"));
+system.addFlight(Flight("Cape Town", "Johannesburg", "10/01/2024", "16:00", "South African Airways", 1270, "15:00"));
+system.addFlight(Flight("Johannesburg", "Cape Town", "10/01/2024", "18:00", "Mango", 1270, "17:00"));
+system.addFlight(Flight("Mumbai", "Chennai", "10/02/2024", "07:00", "Air India", 1030, "06:00"));
+system.addFlight(Flight("Chennai", "Mumbai", "10/02/2024", "09:00", "IndiGo", 1030, "08:00"));
+system.addFlight(Flight("Bangalore", "Kolkata", "10/02/2024", "11:00", "SpiceJet", 1860, "10:00"));
+system.addFlight(Flight("Kolkata", "Bangalore", "10/02/2024", "13:00", "AirAsia", 1860, "12:00"));
+system.addFlight(Flight("Hyderabad", "Delhi", "10/02/2024", "15:00", "GoAir", 1260, "14:00"));
+system.addFlight(Flight("Delhi", "Hyderabad", "10/02/2024", "17:00", "Vistara", 1260, "16:00"));
+system.addFlight(Flight("New York", "Los Angeles", "10/02/2024", "08:00", "American Airlines", 3940, "07:00"));
+system.addFlight(Flight("Los Angeles", "New York", "10/02/2024", "11:00", "United Airlines", 3940, "10:00"));
+system.addFlight(Flight("Chicago", "San Francisco", "10/02/2024", "13:00", "JetBlue", 2970, "12:00"));
+system.addFlight(Flight("San Francisco", "Chicago", "10/02/2024", "16:00", "Delta", 2970, "15:00"));
+system.addFlight(Flight("Mumbai", "Bangalore", "10/03/2024", "09:00", "Air India", 840, "08:00"));
+system.addFlight(Flight("Bangalore", "Mumbai", "10/03/2024", "12:00", "IndiGo", 840, "11:00"));
+system.addFlight(Flight("Kolkata", "Hyderabad", "10/03/2024", "14:00", "SpiceJet", 1500, "13:00"));
+system.addFlight(Flight("Hyderabad", "Kolkata", "10/03/2024", "17:00", "AirAsia", 1500, "16:00"));
+system.addFlight(Flight("Chennai", "Delhi", "10/03/2024", "19:00", "GoAir", 1750, "18:00"));
+system.addFlight(Flight("Delhi", "Chennai", "10/03/2024", "21:00", "Vistara", 1750, "20:00"));
+system.addFlight(Flight("Dubai", "London", "10/03/2024", "05:00", "Emirates", 5500, "04:00"));
+system.addFlight(Flight("London", "Dubai", "10/03/2024", "08:00", "Etihad", 5500, "07:00"));
+system.addFlight(Flight("Singapore", "Mumbai", "10/03/2024", "10:00", "Singapore Airlines", 3920, "09:00"));
+system.addFlight(Flight("Mumbai", "Singapore", "10/03/2024", "13:00", "SilkAir", 3920, "12:00"));
+system.addFlight(Flight("Sydney", "Brisbane", "10/03/2024", "15:00", "Qantas", 730, "14:00"));
+system.addFlight(Flight("Brisbane", "Sydney", "10/03/2024", "17:00", "Virgin Australia", 730, "16:00"));
+system.addFlight(Flight("Toronto", "Calgary", "10/03/2024", "19:00", "Air Canada", 2700, "18:00"));
+system.addFlight(Flight("Calgary", "Toronto", "10/03/2024", "21:00", "WestJet", 2700, "20:00"));
+system.addFlight(Flight("Tokyo", "Nagoya", "10/03/2024", "07:00", "ANA", 350, "06:00"));
+system.addFlight(Flight("Nagoya", "Tokyo", "10/03/2024", "09:00", "Japan Airlines", 350, "08:00"));
+system.addFlight(Flight("Beijing", "Guangzhou", "10/03/2024", "11:00", "China Eastern", 2180, "10:00"));
+system.addFlight(Flight("Guangzhou", "Beijing", "10/03/2024", "13:00", "Air China", 2180, "12:00"));
+system.addFlight(Flight("Cape Town", "Durban", "10/03/2024", "15:00", "South African Airways", 1270, "14:00"));
+system.addFlight(Flight("Durban", "Cape Town", "10/03/2024", "17:00", "Mango", 1270, "16:00"));
+system.addFlight(Flight("Mumbai", "Goa", "10/04/2024", "08:00", "Air India", 570, "07:00"));
+system.addFlight(Flight("Goa", "Mumbai", "10/04/2024", "10:00", "IndiGo", 570, "09:00"));
+system.addFlight(Flight("Bangalore", "Chennai", "10/04/2024", "12:00", "SpiceJet", 290, "11:00"));
+system.addFlight(Flight("Chennai", "Bangalore", "10/04/2024", "14:00", "AirAsia", 290, "13:00"));
+system.addFlight(Flight("Hyderabad", "Mumbai", "10/04/2024", "16:00", "GoAir", 710, "15:00"));
+system.addFlight(Flight("Mumbai", "Hyderabad", "10/04/2024", "18:00", "Vistara", 710, "17:00"));
+system.addFlight(Flight("New York", "Dallas", "10/04/2024", "08:00", "American Airlines", 2200, "07:00"));
+system.addFlight(Flight("Dallas", "New York", "10/04/2024", "11:00", "United Airlines", 2200, "10:00"));
+system.addFlight(Flight("Chicago", "Los Angeles", "10/04/2024", "13:00", "JetBlue", 2800, "12:00"));
+system.addFlight(Flight("Los Angeles", "Chicago", "10/04/2024", "16:00", "Delta", 2800, "15:00"));
+system.addFlight(Flight("Mumbai", "Delhi", "10/05/2024", "09:00", "Air India", 1400, "08:00"));
+system.addFlight(Flight("Delhi", "Mumbai", "10/05/2024", "12:00", "IndiGo", 1400, "11:00"));
+system.addFlight(Flight("Bangalore", "Hyderabad", "10/05/2024", "14:00", "SpiceJet", 570, "13:00"));
+system.addFlight(Flight("Hyderabad", "Bangalore", "10/05/2024", "17:00", "AirAsia", 570, "16:00"));
+system.addFlight(Flight("Kolkata", "Chennai", "10/05/2024", "19:00", "GoAir", 1360, "18:00"));
+system.addFlight(Flight("Chennai", "Kolkata", "10/05/2024", "21:00", "Vistara", 1360, "20:00"));
+system.addFlight(Flight("London", "Paris", "10/05/2024", "08:00", "British Airways", 340, "07:30"));
+system.addFlight(Flight("Paris", "London", "10/05/2024", "10:00", "Air France", 340, "09:30"));
+system.addFlight(Flight("Dubai", "Mumbai", "10/05/2024", "12:00", "Emirates", 1920, "11:00"));
+system.addFlight(Flight("Mumbai", "Dubai", "10/05/2024", "15:00", "Etihad", 1920, "14:00"));
+system.addFlight(Flight("Singapore", "Delhi", "10/05/2024", "17:00", "Singapore Airlines", 4150, "16:00"));
+system.addFlight(Flight("Delhi", "Singapore", "10/05/2024", "20:00", "SilkAir", 4150, "19:00"));
+system.addFlight(Flight("Sydney", "Melbourne", "10/05/2024", "08:00", "Qantas", 880, "07:00"));
+system.addFlight(Flight("Melbourne", "Sydney", "10/05/2024", "10:00", "Virgin Australia", 880, "09:00"));
+system.addFlight(Flight("Toronto", "Vancouver", "10/05/2024", "12:00", "Air Canada", 3360, "11:00"));
+system.addFlight(Flight("Vancouver", "Toronto", "10/05/2024", "15:00", "WestJet", 3360, "14:00"));
+system.addFlight(Flight("Tokyo", "Osaka", "10/05/2024", "07:00", "ANA", 515, "06:00"));
+system.addFlight(Flight("Osaka", "Tokyo", "10/05/2024", "09:00", "Japan Airlines", 515, "08:00"));
+system.addFlight(Flight("Beijing", "Shanghai", "10/05/2024", "11:00", "China Eastern", 1210, "10:00"));
+system.addFlight(Flight("Shanghai", "Beijing", "10/05/2024", "14:00", "Air China", 1210, "13:00"));
+system.addFlight(Flight("Cape Town", "Johannesburg", "10/05/2024", "16:00", "South African Airways", 1270, "15:00"));
+system.addFlight(Flight("Johannesburg", "Cape Town", "10/05/2024", "18:00", "Mango", 1270, "17:00"));
+system.addFlight(Flight("Mumbai", "Chennai", "10/06/2024", "07:00", "Air India", 1030, "06:00"));
+system.addFlight(Flight("Chennai", "Mumbai", "10/06/2024", "09:00", "IndiGo", 1030, "08:00"));
+system.addFlight(Flight("Bangalore", "Kolkata", "10/06/2024", "11:00", "SpiceJet", 1860, "10:00"));
+system.addFlight(Flight("Kolkata", "Bangalore", "10/06/2024", "13:00", "AirAsia", 1860, "12:00"));
+system.addFlight(Flight("Hyderabad", "Delhi", "10/06/2024", "15:00", "GoAir", 1260, "14:00"));
+system.addFlight(Flight("Delhi", "Hyderabad", "10/06/2024", "17:00", "Vistara", 1260, "16:00"));
+system.addFlight(Flight("New York", "Los Angeles", "10/06/2024", "08:00", "American Airlines", 3940, "07:00"));
+system.addFlight(Flight("Los Angeles", "New York", "10/06/2024", "11:00", "United Airlines", 3940, "10:00"));
+system.addFlight(Flight("Chicago", "San Francisco", "10/06/2024", "13:00", "JetBlue", 2970, "12:00"));
+system.addFlight(Flight("San Francisco", "Chicago", "10/06/2024", "16:00", "Delta", 2970, "15:00"));
+system.addFlight(Flight("Mumbai", "Bangalore", "10/07/2024", "09:00", "Air India", 840, "08:00"));
+system.addFlight(Flight("Bangalore", "Mumbai", "10/07/2024", "12:00", "IndiGo", 840, "11:00"));
+system.addFlight(Flight("Kolkata", "Hyderabad", "10/07/2024", "14:00", "SpiceJet", 1500, "13:00"));
+system.addFlight(Flight("Hyderabad", "Kolkata", "10/07/2024", "17:00", "AirAsia", 1500, "16:00"));
+system.addFlight(Flight("Chennai", "Delhi", "10/07/2024", "19:00", "GoAir", 1760, "18:00"));
+system.addFlight(Flight("Delhi", "Chennai", "10/07/2024", "21:00", "Vistara", 1760, "20:00"));
+system.addFlight(Flight("Dubai", "London", "10/07/2024", "05:00", "Emirates", 5500, "04:00"));
+system.addFlight(Flight("London", "Dubai", "10/07/2024", "08:00", "Etihad", 5500, "07:00"));
+
+
+
+
+
+    // Adding routes (graph)
+        system.addRoute("New York", "Los Angeles");
+        system.addRoute("New York", "Chicago");
+        system.addRoute("Los Angeles", "Chicago");
+        system.addRoute("Los Angeles", "New York");
+        system.addRoute("Chicago", "New York");
+        system.addRoute("Chicago", "Los Angeles");
+        system.addRoute("Mumbai", "Delhi");
+        system.addRoute("Delhi", "Mumbai");
+        system.addRoute("Bangalore", "Hyderabad");
+        system.addRoute("Hyderabad", "Bangalore");
+        system.addRoute("Kolkata", "Chennai");
+        system.addRoute("Chennai", "Kolkata");
+        system.addRoute("London", "Paris");
+        system.addRoute("Paris", "London");
+        system.addRoute("Dubai", "Mumbai");
+        system.addRoute("Mumbai", "Dubai");
+        system.addRoute("Singapore", "Delhi");
+        system.addRoute("Delhi", "Singapore");
+        system.addRoute("Sydney", "Melbourne");
+        system.addRoute("Melbourne", "Sydney");
+        system.addRoute("Toronto", "Vancouver");
+        system.addRoute("Vancouver", "Toronto");
+        system.addRoute("Tokyo", "Osaka");
+        system.addRoute("Osaka", "Tokyo");
+        system.addRoute("Beijing", "Shanghai");
+        system.addRoute("Shanghai", "Beijing");
+        system.addRoute("Cape Town", "Johannesburg");
+        system.addRoute("Johannesburg", "Cape Town");
+        system.addRoute("Mumbai", "Chennai");
+        system.addRoute("Chennai", "Mumbai");
+        system.addRoute("Bangalore", "Kolkata");
+        system.addRoute("Kolkata", "Bangalore");
+        system.addRoute("Hyderabad", "Delhi");
+        system.addRoute("Delhi", "Hyderabad");
+        system.addRoute("New York", "Los Angeles");
+        system.addRoute("Los Angeles", "New York");
+        system.addRoute("Chicago", "San Francisco");
+        system.addRoute("San Francisco", "Chicago");
+        system.addRoute("Mumbai", "Bangalore");
+        system.addRoute("Bangalore", "Mumbai");
+        system.addRoute("Kolkata", "Hyderabad");
+        system.addRoute("Hyderabad", "Kolkata");
+        system.addRoute("Chennai", "Delhi");
+        system.addRoute("Delhi", "Chennai");
+        system.addRoute("Dubai", "London");
+        system.addRoute("London", "Dubai");
+        system.addRoute("Singapore", "Mumbai");
+        system.addRoute("Mumbai", "Singapore");
+        system.addRoute("Sydney", "Brisbane");
+        system.addRoute("Brisbane", "Sydney");
+        system.addRoute("Toronto", "Calgary");
+        system.addRoute("Calgary", "Toronto");
+        system.addRoute("Tokyo", "Nagoya");
+        system.addRoute("Nagoya", "Tokyo");
+        system.addRoute("Beijing", "Guangzhou");
+        system.addRoute("Guangzhou", "Beijing");
+        system.addRoute("Cape Town", "Durban");
+        system.addRoute("Durban", "Cape Town");
+        system.addRoute("Mumbai", "Goa");
+        system.addRoute("Goa", "Mumbai");
+        system.addRoute("Bangalore", "Chennai");
+        system.addRoute("Chennai", "Bangalore");
+        system.addRoute("Hyderabad", "Mumbai");
+        system.addRoute("Mumbai", "Hyderabad");
+        system.addRoute("New York", "Dallas");
+        system.addRoute("Dallas", "New York");
+        system.addRoute("Chicago", "Los Angeles");
+        system.addRoute("Los Angeles", "Chicago");
+        system.addRoute("Mumbai", "Delhi");
+        system.addRoute("Delhi", "Mumbai");
+        system.addRoute("Bangalore", "Hyderabad");
+        system.addRoute("Hyderabad", "Bangalore");
+        system.addRoute("Kolkata", "Chennai");
+        system.addRoute("Chennai", "Kolkata");
+        system.addRoute("London", "Paris");
+        system.addRoute("Paris", "London");
+        system.addRoute("Dubai", "Mumbai");
+        system.addRoute("Mumbai", "Dubai");
+        system.addRoute("Singapore", "Delhi");
+        system.addRoute("Delhi", "Singapore");
+        system.addRoute("Sydney", "Melbourne");
+        system.addRoute("Melbourne", "Sydney");
+        system.addRoute("Toronto", "Vancouver");
+        system.addRoute("Vancouver", "Toronto");
+        system.addRoute("Tokyo", "Osaka");
+        system.addRoute("Osaka", "Tokyo");
+        system.addRoute("Beijing", "Shanghai");
+        system.addRoute("Shanghai", "Beijing");
+        system.addRoute("Cape Town", "Johannesburg");
+        system.addRoute("Johannesburg", "Cape Town");
+        system.addRoute("Mumbai", "Chennai");
+        system.addRoute("Chennai", "Mumbai");
+        system.addRoute("Bangalore", "Kolkata");
+        system.addRoute("Kolkata", "Bangalore");
+        system.addRoute("Hyderabad", "Delhi");
+        system.addRoute("Delhi", "Hyderabad");
+        system.addRoute("New York", "Los Angeles");
+        system.addRoute("Los Angeles", "New York");
+        system.addRoute("Chicago", "San Francisco");
+        system.addRoute("San Francisco", "Chicago");
+        system.addRoute("Mumbai", "Bangalore");
+        system.addRoute("Bangalore", "Mumbai");
+        system.addRoute("Kolkata", "Hyderabad");
+        system.addRoute("Hyderabad", "Kolkata");
+        system.addRoute("Chennai", "Delhi");
+        system.addRoute("Delhi", "Chennai");
+        system.addRoute("Dubai", "London");
+        system.addRoute("London", "Dubai");
+        system.addRoute("Singapore", "Mumbai");
+        system.addRoute("Mumbai", "Singapore");
+        system.addRoute("Sydney", "Brisbane");
+        system.addRoute("Brisbane", "Sydney");
+        system.addRoute("Toronto", "Calgary");
+        system.addRoute("Calgary", "Toronto");
+        system.addRoute("Tokyo", "Nagoya");
+        system.addRoute("Nagoya", "Tokyo");
+        system.addRoute("Beijing", "Guangzhou");
+        system.addRoute("Guangzhou", "Beijing");
+        system.addRoute("Cape Town", "Durban");
+        system.addRoute("Durban", "Cape Town");
+        system.addRoute("Mumbai", "Goa");
+        system.addRoute("Goa", "Mumbai");
+        system.addRoute("Bangalore", "Chennai");
+        system.addRoute("Chennai", "Bangalore");
+        system.addRoute("Hyderabad", "Mumbai");
+        system.addRoute("Mumbai", "Hyderabad");
+        system.addRoute("New York", "Dallas");
+        system.addRoute("Dallas", "New York");
+        system.addRoute("Chicago", "Los Angeles");
+        system.addRoute("Los Angeles", "Chicago");
+        system.addRoute("New York", "Los Angeles");
+        system.addRoute("New York", "Chicago");
+        system.addRoute("Los Angeles", "Chicago");
+        system.addRoute("Los Angeles", "New York");
+        system.addRoute("Chicago", "New York");
+        system.addRoute("Chicago", "Los Angeles");
+        system.addRoute("Mumbai", "Delhi");
+        system.addRoute("Delhi", "Mumbai");
+        system.addRoute("Bangalore", "Hyderabad");
+        system.addRoute("Hyderabad", "Bangalore");
+        system.addRoute("Kolkata", "Chennai");
+        system.addRoute("Chennai", "Kolkata");
+        system.addRoute("London", "Paris");
+        system.addRoute("Paris", "London");
+        system.addRoute("Dubai", "Mumbai");
+        system.addRoute("Mumbai", "Dubai");
+        system.addRoute("Singapore", "Delhi");
+        system.addRoute("Delhi", "Singapore");
+        system.addRoute("Sydney", "Melbourne");
+        system.addRoute("Melbourne", "Sydney");
+        system.addRoute("Toronto", "Vancouver");
+        system.addRoute("Vancouver", "Toronto");
+        system.addRoute("Tokyo", "Osaka");
+        system.addRoute("Osaka", "Tokyo");
+        system.addRoute("Beijing", "Shanghai");
+        system.addRoute("Shanghai", "Beijing");
+        system.addRoute("Cape Town", "Johannesburg");
+        system.addRoute("Johannesburg", "Cape Town");
+        system.addRoute("Mumbai", "Chennai");
+        system.addRoute("Chennai", "Mumbai");
+        system.addRoute("Bangalore", "Kolkata");
+        system.addRoute("Kolkata", "Bangalore");
+
+}
+
+int module1()
+{
+    FlightInformationSystem system;
+    initializeSystem(system);  // Initialize with predefined flights and routes
+
+    int choice;
+
+    do
+    {
+        cout << "\nMenu:\n"
+             << "1. Add flight\n"
+             << "2. Remove flight\n"
+             << "3. Update flight time\n"
+             << "4. List flights by date\n"
+             << "5. List flights by airline\n"
+             << "6. Find shortest route\n"
+             << "7. Display all flights\n"
+             << "8. Sort flights\n"
+             << "9. Search flights by origin and destination\n"
+             << "10. Find routes (BFS)\n"
+             << "11. Find routes (DFS)\n"
+             << "12. Display all flight routes\n"
+             << "13. Search flights by airline and date\n"
+             << "14. Update flight destination\n"
+             << "15. Count flights by origin\n"
+             << "16. List short distance flights\n"
+             << "17. List long distance flights\n"
+             << "18. List flights with lounge access\n"
+             << "19. List private jet flights\n"
+             << "20. Count delayed flights\n"
+             << "21. Show delayed flights\n"
+             << "22. Exit\n"
+             << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+
+            case 1:
+            {
+
+                string origin, destination, date, time, airline, scheduledTime;
+                int distance;
+                cout << "Enter flight details:" << endl;
+                cout << "Origin: "; cin >> origin;
+                cout << "Destination: "; cin >> destination;
+                cout << "Date (DD/MM/YYYY): "; cin >> date;
+                cout << "Time (HH:MM): "; cin >> time;
+                cout << "Airline: "; cin >> airline;
+                cout << "Distance (km): "; cin >> distance;
+                cout << "Scheduled Time (HH:MM): "; cin >> scheduledTime;
+
+                Flight newFlight(origin, destination, date, time, airline, distance, scheduledTime);
+                system.addFlight(newFlight);
+                break;
+
+            }
+            case 2:
+            {
+
+                string origin, destination, date, time;
+                cout << "Enter flight details to remove:" << endl;
+                cout << "Origin: "; cin >> origin;
+                cout << "Destination: "; cin >> destination;
+                cout << "Date (DD/MM/YYYY): "; cin >> date;
+                cout << "Time (HH:MM): "; cin >> time;
+
+                system.removeFlight(origin, destination, date, time);
+                break;
+
+            }
+            case 3:
+            {
+
+                string origin, destination, date, oldTime, newTime;
+                cout << "Enter flight details to update time:" << endl;
+                cout << "Origin: "; cin >> origin;
+                cout << "Destination: "; cin >> destination;
+                cout << "Date (DD/MM/YYYY): "; cin >> date;
+                cout << "Old Time (HH:MM): "; cin >> oldTime;
+                cout << "New Time (HH:MM): "; cin >> newTime;
+
+                system.updateFlightTime(origin, destination, date, oldTime, newTime);
+                break;
+
+            }
+            case 4:
+            {
+
+                string date;
+                cout << "Enter date (DD/MM/YYYY): "; cin >> date;
+                system.listFlightsByDate(date);
+                break;
+
+            }
+            case 5:
+            {
+
+                string airline;
+                cout << "Enter airline: "; cin >> airline;
+                system.listFlightsByAirline(airline);
+                break;
+
+            }
+            case 6:
+            {
+
+                string start, end;
+                cout << "Enter starting point: "; cin >> start;
+                cout << "Enter destination point: "; cin >> end;
+                system.findShortestRoute(start, end);
+                break;
+
+            }
+            case 7:
+
+                system.displayAllFlights();
+                break;
+
+            case 8:
+            {
+
+                int sortChoice;
+                cout << "Sort by:\n"
+                     << "1. Origin\n"
+                     << "2. Destination\n"
+                     << "3. Date\n"
+                     << "4. Airline\n"
+                     << "Enter your choice: ";
+                cin >> sortChoice;
+
+                system.sortFlights(sortChoice);
+                break;
+
+            }
+            case 9:
+            {
+
+                string origin, destination;
+                cout << "Enter origin: "; cin >> origin;
+                cout << "Enter destination: "; cin >> destination;
+
+                system.searchFlightsByOriginAndDestination(origin, destination);
+                break;
+
+            }
+            case 10:
+            {
+
+                string start;
+                cout << "Enter starting point for BFS: "; cin >> start;
+                system.findRoutesBFS(start);
+                break;
+
+            }
+            case 11:
+            {
+
+                string start;
+                cout << "Enter starting point for DFS: "; cin >> start;
+                system.findRoutesDFS(start);
+                break;
+
+            }
+            case 12:
+
+                system.displayRoutes();
+                break;
+
+            case 13:
+            {
+
+                string airline, date;
+                cout << "Enter airline: "; cin >> airline;
+                cout << "Enter date (DD/MM/YYYY): "; cin >> date;
+                system.searchFlightsByAirlineAndDate(airline, date);
+                break;
+
+            }
+            case 14:
+            {
+
+                string origin, date, time, newDestination;
+                cout << "Enter flight details to update destination:" << endl;
+                cout << "Origin: "; cin >> origin;
+                cout << "Date (DD/MM/YYYY): "; cin >> date;
+                cout << "Time (HH:MM): "; cin >> time;
+                cout << "New Destination: "; cin >> newDestination;
+
+                system.updateFlightDestination(origin, date, time, newDestination);
+                break;
+
+            }
+            case 15:
+            {
+
+                string origin;
+                cout << "Enter origin: "; cin >> origin;
+                int count = system.countFlightsByOrigin(origin);
+                cout << "Number of flights from " << origin << ": " << count << endl;
+                break;
+
+            }
+            case 16:
+            {
+
+                int maxDistance;
+                cout << "Enter maximum distance (km): ";
+                cin >> maxDistance;
+                system.listShortDistanceFlights(maxDistance);
+                break;
+
+            }
+            case 17:
+            {
+
+                int minDistance;
+                cout << "Enter minimum distance (km): ";
+                cin >> minDistance;
+                system.listLongDistanceFlights(minDistance);
+                break;
+
+            }
+            case 18:
+            {
+
+                string airline;
+                cout << "Enter airline for lounge access: ";
+                cin >> airline;
+                system.listLoungeAccessFlights(airline);
+                break;
+
+            }
+            case 19:
+
+                system.listPrivateJetFlights();
+                break;
+
+            case 20:
+
+                system.countDelayedFlights();
+                break;
+
+            case 21:
+
+                system.showDelayedFlights();
+                break;
+
+            case 22:
+
+                cout << "Exiting program..." << endl;
+                break;
+
+            default:
+                cout << "Invalid choice!" << endl;
+        }
+
+    } while (choice != 22);
+
     return 0;
-}</div>
-    <button id="compileBtn">Compile and Run</button>
-    <h2>Output:</h2>
+
+}
+
+// Class representing a Flights
+class Flights
+{
+public:
+
+    string FlightsNumber;
+
+    string departure;
+
+    string destination;
+
+    string departureTime;
+
+    int capacity;
+
+    int bookedSeats;
+
+    vector<string> delayReasons;
+
+    // Default constructor
+    Flights() : FlightsNumber(""), departure(""), destination(""), departureTime(""), capacity(0), bookedSeats(0) {}
+
+    // Parameterized constructor
+    Flights(string fn, string dep, string dest, string dt, int cap)
+
+        : FlightsNumber(fn), departure(dep), destination(dest), departureTime(dt), capacity(cap), bookedSeats(0) {}
+
+    bool bookSeat()
+
+    {
+        if (bookedSeats < capacity)
+        {
+            bookedSeats++;
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    bool cancelSeat()
+
+    {
+        if (bookedSeats > 0)
+        {
+            bookedSeats--;
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    void addDelayReason(const string &reason)
+
+    {
+        delayReasons.push_back(reason);
+
+    }
+
+    void clearDelayReasons()
+
+    {
+        delayReasons.clear();
+    }
+
+    void modifyDetails(const string &newDep, const string &newDest, const string &newTime, int newCap)
+
+    {
+        departure = newDep;
+
+        destination = newDest;
+
+        departureTime = newTime;
+
+        capacity = newCap;
+    }
+
+    void display() const
+
+    {
+        cout << "Flights Number: " << FlightsNumber << "\nDeparture: " << departure
+
+             << "\nDestination: " << destination << "\nDeparture Time: " << departureTime
+
+             << "\nCapacity: " << capacity << "\nBooked Seats: " << bookedSeats << endl;
+
+        if (!delayReasons.empty())
+
+        {
+            cout << "Delay Reasons: ";
+
+            for (const string &reason : delayReasons)
+            {
+                cout << reason << "; ";
+            }
+
+            cout << endl;
+        }
+
+    }
+
+    string toString() const
+
+    {
+        ostringstream oss;
+
+        oss << FlightsNumber << "," << departure << "," << destination << ","
+
+            << departureTime << "," << capacity << "," << bookedSeats;
+
+        for (const string &reason : delayReasons)
+
+        {
+            oss << "," << reason;
+        }
+
+        return oss.str();
+    }
+
+    static Flights fromString(const string &data)
+
+    {
+        istringstream iss(data);
+
+        string fn, dep, dest, dt;
+
+        int cap, booked;
+
+        vector<string> reasons;
+
+        getline(iss, fn, ',');
+
+        getline(iss, dep, ',');
+
+        getline(iss, dest, ',');
+
+        getline(iss, dt, ',');
+
+        iss >> cap;
+
+        iss.ignore();
+
+        iss >> booked;
+
+        iss.ignore();
+
+        string reason;
+
+        while (getline(iss, reason, ','))
+
+        {
+            reasons.push_back(reason);
+        }
+
+        Flights Flights(fn, dep, dest, dt, cap);
+
+        Flights.bookedSeats = booked;
+
+        Flights.delayReasons = reasons;
+
+        return Flights;
+    }
+
+};
+
+// Class managing multiple Flight1
+class FlightsManager
+
+{
+    map<string, Flights> Flight1;
+
+public:
+
+    void addFlights(const Flights &Flights)
+
+    {
+        Flight1[Flights.FlightsNumber] = Flights;
+    }
+
+    Flights *findFlights(const string &FlightsNumber)
+
+    {
+        if (Flight1.find(FlightsNumber) != Flight1.end())
+
+        {
+            return &Flight1[FlightsNumber];
+        }
+
+        return nullptr;
+
+    }
+
+    void displayAllFlight1() const
+
+    {
+        for (const auto &pair : Flight1)
+
+        {
+            pair.second.display();
+
+            cout << "---------------------------" << endl;
+        }
+
+    }
+
+    void displayFlight1ByDestination(const string &destination) const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+
+        {
+            if (pair.second.destination == destination)
+
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+
+        }
+        if (!found)
+
+        {
+            cout << "No Flight1 found to destination: " << destination << endl;
+        }
+
+    }
+
+    void displayFullyBookedFlight1() const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+
+        {
+            if (pair.second.bookedSeats == pair.second.capacity)
+
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+
+        }
+
+        if (!found)
+
+        {
+            cout << "No fully booked Flight1 found." << endl;
+        }
+
+    }
+
+    bool bookFlights(const string &FlightsNumber)
+
+    {
+        Flights *Flights = findFlights(FlightsNumber);
+
+        if (Flights)
+
+        {
+            return Flights->bookSeat();
+        }
+
+        return false;
+    }
+
+    bool cancelFlights(const string &FlightsNumber)
+
+    {
+        Flights *Flights = findFlights(FlightsNumber);
+
+        if (Flights)
+
+        {
+            return Flights->cancelSeat();
+        }
+
+        return false;
+    }
+
+    bool addFlightsDelay(const string &FlightsNumber, const string &reason)
+
+    {
+        Flights *Flights = findFlights(FlightsNumber);
+
+        if (Flights)
+
+        {
+            Flights->addDelayReason(reason);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool modifyFlightsDetails(const string &FlightsNumber, const string &newDep, const string &newDest, const string &newTime, int newCap)
+
+    {
+        Flights *Flights = findFlights(FlightsNumber);
+
+        if (Flights)
+
+        {
+            Flights->modifyDetails(newDep, newDest, newTime, newCap);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool removeFlights(const string &FlightsNumber)
+
+    {
+        return Flight1.erase(FlightsNumber) > 0;
+    }
+
+    void viewDelayReasons(const string &FlightsNumber) const
+
+    {
+        auto it = Flight1.find(FlightsNumber);
+
+        if (it != Flight1.end())
+
+        {
+            if (!it->second.delayReasons.empty())
+
+            {
+                cout << "Delay Reasons for Flights " << FlightsNumber << ": ";
+
+                for (const string &reason : it->second.delayReasons)
+
+                {
+                    cout << reason << "; ";
+                }
+
+                cout << endl;
+            }
+
+            else
+
+            {
+                cout << "No delay reasons recorded for Flights " << FlightsNumber << "." << endl;
+            }
+
+        }
+
+        else
+
+        {
+            cout << "Flights " << FlightsNumber << " not found." << endl;
+        }
+
+    }
+
+    void saveToFile(const string &filename) const
+
+    {
+        ofstream file(filename);
+
+        for (const auto &pair : Flight1)
+
+        {
+            file << pair.second.toString() << endl;
+        }
+
+        file.close();
+    }
+
+    void loadFromFile(const string &filename)
+
+    {
+        ifstream file(filename);
+
+        string line;
+
+        while (getline(file, line))
+
+        {
+            addFlights(Flights::fromString(line));
+        }
+
+        file.close();
+    }
+
+    void displayFlightsByNumber(const string &FlightsNumber) const
+    {
+        auto it = Flight1.find(FlightsNumber);
+
+        if (it != Flight1.end())
+
+        {
+            it->second.display();
+        }
+
+        else
+
+        {
+            cout << "Flights with number " << FlightsNumber << " not found.\n";
+        }
+
+    }
+
+    int availableSeats(const string &FlightsNumber) const
+
+    {
+        auto it = Flight1.find(FlightsNumber);
+
+        if (it != Flight1.end())
+
+        {
+            return it->second.capacity - it->second.bookedSeats;
+        }
+
+        cout << "Flights not found!\n";
+
+        return 0;
+    }
+
+    void displayFlight1ByDeparture(const string &departure) const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+
+        {
+            if (pair.second.departure == departure)
+
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+
+        }
+
+        if (!found)
+
+        {
+            cout << "No Flight1 found departing from: " << departure << endl;
+        }
+
+    }
+
+    void displayNonFullyBookedFlight1() const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+        {
+
+            if (pair.second.bookedSeats < pair.second.capacity)
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+
+        }
+
+        if (!found)
+
+        {
+            cout << "No Flight1 are available with unbooked seats.\n";
+        }
+    }
+
+    void displayFlight1ByCapacity(int capacity) const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+        {
+
+            if (pair.second.capacity == capacity)
+
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+
+        }
+
+        if (!found)
+
+        {
+            cout << "No Flight1 found with capacity: " << capacity << endl;
+        }
+    }
+
+    void displayFlight1ByTimeRange(const string &startTime, const string &endTime) const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+
+        {
+            if (pair.second.departureTime >= startTime && pair.second.departureTime <= endTime)
+
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+        }
+
+        if (!found)
+
+        {
+            cout << "No Flight1 found within the time range: " << startTime << " to " << endTime << endl;
+        }
+    }
+
+    bool updateFlightsDepartureTime(const string &FlightsNumber, const string &newTime)
+
+    {
+        Flights *Flights = findFlights(FlightsNumber);
+
+        if (Flights)
+
+        {
+            Flights->departureTime = newTime;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void displayFlight1WithSpecificDelayReason(const string &reason) const
+
+    {
+        bool found = false;
+
+        for (const auto &pair : Flight1)
+
+        {
+            if (find(pair.second.delayReasons.begin(), pair.second.delayReasons.end(), reason) != pair.second.delayReasons.end())
+
+            {
+                pair.second.display();
+
+                cout << "---------------------------" << endl;
+
+                found = true;
+            }
+
+        }
+
+        if (!found)
+
+        {
+            cout << "No Flight1 found with delay reason: " << reason << endl;
+        }
+    }
+
+};
+
+// Menu display
+void menu()
+{
+    cout << "\nFlights Route Management System\n";
+
+    cout << "1. Add Flights\n";
+
+    cout << "2. Display All Flight1\n";
+
+    cout << "3. Book a Flights\n";
+
+    cout << "4. Cancel a Flights\n";
+
+    cout << "5. Add Delay Reason to a Flights\n";
+
+    cout << "6. View Delay Reasons of a Flights\n";
+
+    cout << "7. Modify Flights Details\n";
+
+    cout << "8. Remove Flights\n";
+
+    cout << "9. Display Flight1 by Destination\n";
+
+    cout << "10. Display Fully Booked Flight1\n";
+
+    cout << "11. Save Flight1 to File\n";
+
+    cout << "12. Load Flight1 from File\n";
+
+    cout << "13. Display Flights by Flights Number\n";
+
+    cout << "14. Display Available Seats\n";
+
+    cout << "15. Display Flight1 by Departure\n";
+
+    cout << "16. Display Non-Fully Booked Flight1\n";
+
+    cout << "17. Display Flight1 by Capacity\n";
+
+    cout << "18. Display Flight1 by Time Range\n";
+
+    cout << "19. Update Flights Departure Time\n";
+
+    cout << "20. Display Flight1 with Specific Delay Reason\n";
+
+    cout << "21. Exit\n";
+
+    cout << "Enter your choice: ";
+}
+
+// Main function to run the Flights management system
+int module2()
+{
+    FlightsManager FlightsManager;
+
+    FlightsManager.loadFromFile("Flight1.txt");
+
+    int choice;
+
+    do
+    {
+        menu();
+
+        cin >> choice;
+
+        cin.ignore();  // To clear the input buffer
+
+        switch (choice)
+
+        {
+        case 1:
+
+        {
+            string fn, dep, dest, dt;
+
+            int cap;
+
+            cout << "Enter Flights Number: ";
+
+            getline(cin, fn);
+
+            cout << "Enter Departure City: ";
+
+            getline(cin, dep);
+
+            cout << "Enter Destination City: ";
+
+            getline(cin, dest);
+
+            cout << "Enter Departure Time: ";
+
+            getline(cin, dt);
+
+            cout << "Enter Capacity: ";
+
+            cin >> cap;
+
+            FlightsManager.addFlights(Flights(fn, dep, dest, dt, cap));
+
+            cout << "Flights added successfully!" << endl;
+
+            break;
+        }
+
+        case 2:
+
+            FlightsManager.displayAllFlight1();
+
+            break;
+
+        case 3:
+
+        {
+            string FlightsNumber;
+
+            cout << "Enter Flights Number to Book: ";
+
+            getline(cin, FlightsNumber);
+
+            if (FlightsManager.bookFlights(FlightsNumber))
+
+            {
+                cout << "Flights booked successfully!" << endl;
+            }
+
+            else
+
+            {
+                cout << "Unable to book the Flights. It may be fully booked." << endl;
+            }
+
+            break;
+        }
+
+        case 4:
+
+        {
+            string FlightsNumber;
+
+            cout << "Enter Flights Number to Cancel: ";
+
+            getline(cin, FlightsNumber);
+
+            if (FlightsManager.cancelFlights(FlightsNumber))
+
+            {
+                cout << "Flights cancelled successfully!" << endl;
+            }
+
+            else
+            {
+                cout << "Unable to cancel the Flights. No seats were booked." << endl;
+            }
+
+            break;
+
+        }
+
+        case 5:
+
+        {
+            string FlightsNumber, reason;
+
+            cout << "Enter Flights Number to Add Delay Reason: ";
+
+            getline(cin, FlightsNumber);
+
+            cout << "Enter Delay Reason: ";
+
+            getline(cin, reason);
+
+            if (FlightsManager.addFlightsDelay(FlightsNumber, reason))
+
+            {
+                cout << "Delay reason added successfully!" << endl;
+            }
+
+            else
+
+            {
+                cout << "Unable to add delay reason. Flights not found." << endl;
+            }
+
+            break;
+        }
+
+        case 6:
+
+        {
+            string FlightsNumber;
+
+            cout << "Enter Flights Number to View Delay Reasons: ";
+
+            getline(cin, FlightsNumber);
+
+            FlightsManager.viewDelayReasons(FlightsNumber);
+
+            break;
+        }
+
+        case 7:
+
+        {
+            string FlightsNumber, newDep, newDest, newTime;
+
+            int newCap;
+
+            cout << "Enter Flights Number to Modify: ";
+
+            getline(cin, FlightsNumber);
+
+            cout << "Enter New Departure City: ";
+
+            getline(cin, newDep);
+
+            cout << "Enter New Destination City: ";
+
+            getline(cin, newDest);
+
+            cout << "Enter New Departure Time: ";
+
+            getline(cin, newTime);
+
+            cout << "Enter New Capacity: ";
+
+            cin >> newCap;
+
+            if (FlightsManager.modifyFlightsDetails(FlightsNumber, newDep, newDest, newTime, newCap))
+
+            {
+                cout << "Flights details modified successfully!" << endl;
+            }
+
+            else
+
+            {
+                cout << "Unable to modify Flights details. Flights not found." << endl;
+            }
+
+            break;
+        }
+
+        case 8:
+
+        {
+            string FlightsNumber;
+
+            cout << "Enter Flights Number to Remove: ";
+
+            getline(cin, FlightsNumber);
+
+            if (FlightsManager.removeFlights(FlightsNumber))
+
+            {
+                cout << "Flights removed successfully!" << endl;
+            }
+
+            else
+
+            {
+                cout << "Unable to remove Flights. Flights not found." << endl;
+            }
+
+            break;
+        }
+
+        case 9:
+
+        {
+            string destination;
+
+            cout << "Enter Destination City to View Flight1: ";
+
+            getline(cin, destination);
+
+            FlightsManager.displayFlight1ByDestination(destination);
+
+            break;
+        }
+
+        case 10:
+
+            FlightsManager.displayFullyBookedFlight1();
+
+            break;
+
+        case 11:
+
+        {
+            string filename;
+
+            cout << "Enter filename to save Flight1 to: ";
+
+            getline(cin, filename);
+
+            FlightsManager.saveToFile(filename);
+
+            cout << "Flight1 saved to file successfully!" << endl;
+
+            break;
+        }
+
+        case 12:
+
+        {
+            string filename;
+
+            cout << "Enter filename to load Flight1 from: ";
+
+            getline(cin, filename);
+
+            FlightsManager.loadFromFile(filename);
+
+            cout << "Flight1 loaded from file successfully!" << endl;
+
+            break;
+        }
+
+        case 13:
+
+        {
+            string FlightsNumber;
+
+            cout << "Enter Flights Number to Display: ";
+
+            getline(cin, FlightsNumber);
+
+            FlightsManager.displayFlightsByNumber(FlightsNumber);
+
+            break;
+        }
+
+        case 14:
+
+        {
+            string FlightsNumber;
+
+            cout << "Enter Flights Number to Check Available Seats: ";
+
+            getline(cin, FlightsNumber);
+
+            int available = FlightsManager.availableSeats(FlightsNumber);
+
+            if (available > 0)
+            {
+                cout << "Available Seats: " << available << endl;
+            }
+
+            else
+
+            {
+                cout << "No available seats or Flights not found." << endl;
+            }
+
+            break;
+        }
+
+        case 15:
+
+        {
+            string departure;
+
+            cout << "Enter Departure City to View Flight1: ";
+
+            getline(cin, departure);
+
+            FlightsManager.displayFlight1ByDeparture(departure);
+
+            break;
+        }
+
+        case 16:
+
+            FlightsManager.displayNonFullyBookedFlight1();
+
+            break;
+
+        case 17:
+
+        {
+            int capacity;
+
+            cout << "Enter Capacity to View Flight1: ";
+
+            cin >> capacity;
+
+            FlightsManager.displayFlight1ByCapacity(capacity);
+
+            break;
+        }
+
+        case 18:
+
+        {
+            string startTime, endTime;
+
+            cout << "Enter Start Time (HH:MM): ";
+
+            getline(cin, startTime);
+
+            cout << "Enter End Time (HH:MM): ";
+
+            getline(cin, endTime);
+
+            FlightsManager.displayFlight1ByTimeRange(startTime, endTime);
+
+            break;
+        }
+
+        case 19:
+
+        {
+            string FlightsNumber, newTime;
+
+            cout << "Enter Flights Number to Update Departure Time: ";
+
+            getline(cin, FlightsNumber);
+
+            cout << "Enter New Departure Time (HH:MM): ";
+
+            getline(cin, newTime);
+
+            if (FlightsManager.updateFlightsDepartureTime(FlightsNumber, newTime))
+            {
+                cout << "Flights departure time updated successfully!" << endl;
+            }
+
+            else
+            {
+                cout << "Unable to update departure time. Flights not found." << endl;
+            }
+
+            break;
+        }
+
+        case 20:
+
+        {
+            string reason;
+
+            cout << "Enter Delay Reason to View Flight1: ";
+
+            getline(cin, reason);
+
+            FlightsManager.displayFlight1WithSpecificDelayReason(reason);
+
+            break;
+        }
+
+        case 21:
+
+                cout << "Exiting program..." << endl;
+                return 0;
+
+        default:
+
+            cout << "Invalid choice. Please try again." << endl;
+
+            break;
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
+
+
+// ---------------------------------------Flight Booking System---------------------------------
+
+#include <iostream>
+
+#include <fstream>
+
+#include <iomanip>
+
+#include <vector>
+
+#include <stack>
+
+#include <string>
+
+#include <climits>
+
+using namespace std;
+
+
+
+
+void mainMenu();
+
+
+// This is Management class for call Main menu
+
+
+class Management
+
+{
+
+public:
+
+    Management()
+
+    {
+        mainMenu();
+
+    }
+
+
+};
+
+
+// This is Detail class for taking details from user
+
+
+class Details
+
+{
+
+public:
+
+    static string name, gender;
+
+    int phoneNumber, age;
+
+    string address;
+
+    static int id;
+
+    char arr[100];
+
+
+    // Taking details
+
+
+    void information()
+
+    {
+
+        cout << "Enter your ID: ";
+
+        cin >> id;
+
+        cout << "Enter your Name: ";
+
+        cin >> name;
+
+        cout << "Enter your Age: ";
+
+        cin >> age;
+
+        cout << "Enter your Address: ";
+
+        cin >> address;
+
+        cout << "Enter your Gender: ";
+
+        cin >> gender;
+
+
+       cout << "\n===============================================================\n";
+
+       cout<<"ID = "<<id<<endl;
+
+       cout<<"NAME = "<<name<<endl;
+
+       cout<<"AGE = "<<age<<endl;
+
+       cout<<"ADDRESS = "<<address<<endl;
+
+       cout<<"GENDER = "<<gender<<endl;
+
+       cout << "\n===============================================================\n";
+
+
+
+        cout << "\n===============================================================\n"
+     << "                    YOUR DETAILS HAVE BEEN SAVED              \n"
+     << "===============================================================\n"
+     << "                 Thank you for using our service!             \n"
+     << "      Please keep your Booking ID handy for future reference. \n"
+     << "===============================================================\n"
+     << endl;
+
+    }
+
+};
+
+
+int Details::id;
+
+string Details::name;
+
+string Details::gender;
+
+
+// This is Registration class for Book Ticket
+
+
+class Registration
+
+{
+
+public:
+
+    static int chooseCountry;
+
+    int chooseFlight;
+
+    int backMainmenu;
+
+    static float flightCharges;
+
+
+    // This function have all the flights details
+
+    void flights()
+
+    {
+        string flight[] = {"Dubai", "Canada", "USA", "UK", "Australia", "Europe"};
+
+
+        // Print available flights
+
+        for (int i = 0; i < 6; i++)
+
+        {
+
+            cout << i + 1 << ". Flight to " << flight[i] << "\n";
+
+        }
+
+        // Take country name from user
+
+        cout << "Select Country: ";
+
+        cin >> chooseCountry;
+
+
+        switch (chooseCountry)
+
+        {
+
+        case 1:
+
+            cout << "\n*****************************************************\n";
+    cout << "          WELCOME TO   S k y l i n e  A i r w a y s        \n";
+    cout << "*****************************************************\n";
+    cout << "\n................. YOUR COMFORT IS OUR PRIORITY .................\n";
+    cout << "                       ....................                         \n";
+    cout << "                     Enjoy the Journey!                             \n";
+    cout << "                 Where Dreams Take Flight...                         \n";
+    cout << "\n_______________________________________________________\n";
+    cout << "                FOLLOWING ARE THE FLIGHTS AVAILABLE                 \n";
+    cout << "_______________________________________________________\n";
+
+
+
+    // Flight details
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 1:  DUB - 498                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         08-01-2025                              \n";
+    cout << "Time:         08:00 AM                                \n";
+    cout << "Duration:     10 hrs                                  \n";
+    cout << "Cost:         Rs. 14,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 2:  DUB - 568                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         09-01-2025                             \n";
+    cout << "Time:         04:00 AM                                \n";
+    cout << "Duration:     12 hrs                                  \n";
+    cout << "Cost:         Rs. 10,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 3:  DUB - 238                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         10-01-2025                              \n";
+    cout << "Time:         02:00 AM                                \n";
+    cout << "Duration:     09 hrs                                  \n";
+    cout << "Cost:         Rs. 8,000                               \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 4:  DUB - 257                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         16-01-2025                              \n";
+    cout << "Time:         12:30 AM                                \n";
+    cout << "Duration:     13 hrs                                  \n";
+    cout << "Cost:         Rs. 14,000                               \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 5:  DUB - 351                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         1-02-2025                              \n";
+    cout << "Time:         2:00 PM                                \n";
+    cout << "Duration:     07 hrs                                  \n";
+    cout << "Cost:         Rs. 17,500                               \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+
+    cout << "\n===========================================================\n";
+    cout << "      Thank you for choosing  S k y l i n e  A i r w a y s !      \n";
+    cout << "         We look forward to serving you on board.          \n";
+    cout << "===========================================================\n";
+    cout << "                       Have a great flight!                 \n";
+    cout << "===========================================================\n";
+            // Take flight from user
+
+            cout << "\nSelect the flight: ";
+
+
+            cin >> chooseFlight;
+
+
+            // Check which flight user has select and store flight charges
+
+            if (chooseFlight == 1)
+
+            {
+                flightCharges = 14000;
+
+                cout << "\n____________You have successfully booked the flight DUB - 498________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+
+            else if (chooseFlight == 2)
+
+            {
+                flightCharges = 10000;
+
+                cout << "\n____________You have successfully booked the flight DUB - 598________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 3)
+
+            {
+                flightCharges = 8000;
+
+                cout << "\n____________You have successfully booked the flight DUB - 238________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 4)
+
+            {
+                flightCharges = 14000;
+
+                cout << "\n____________You have successfully booked the flight DUB - 257________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 5)
+
+            {
+                flightCharges = 17500;
+
+                cout << "\n____________You have successfully booked the flight DUB - 351________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+
+            }
+
+            else
+
+            {
+                // If user entered invalid key then flight() function run again
+
+                cout << "You are entered invalid key, Please try again! " << endl;
+
+                cout << endl;
+
+                flights();
+
+            }
+            // For go back to Main menu
+
+            cout << "\nPress any key to go back to Main menu: "
+
+
+                 << endl;
+
+            cin >> backMainmenu;
+
+            if (backMainmenu == 1)
+
+            {
+
+                mainMenu();
+
+            }
+
+            else
+
+            {
+
+                mainMenu();
+
+            }
+
+
+        case 2:
+
+            cout << "\n*****************************************************\n";
+    cout << "         WELCOME TO   S k y l i n e  A i r w a y s               \n";
+    cout << "*****************************************************\n";
+    cout << "\n................. YOUR COMFORT IS OUR PRIORITY .................\n";
+    cout << "                       ....................                         \n";
+    cout << "                     Enjoy the Journey!                             \n";
+    cout << "                 Where Every Mile Feels Like Home...                 \n";
+    cout << "\n_______________________________________________________\n";
+    cout << "                FOLLOWING ARE THE FLIGHTS AVAILABLE                 \n";
+    cout << "_______________________________________________________\n";
+
+
+
+    // Flight details
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 1:  CA - 198                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         11-04-2025                              \n";
+    cout << "Time:         09:00 AM                                \n";
+    cout << "Duration:     7 hrs                                   \n";
+    cout << "Cost:         Rs. 20,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 2:  CA - 668                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         02-08-2025                              \n";
+    cout << "Time:         12:00 AM                                \n";
+    cout << "Duration:     6 hrs                                   \n";
+    cout << "Cost:         Rs. 30,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 3:  CA - 938                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         19-02-2025                              \n";
+    cout << "Time:         07:00 AM                                \n";
+    cout << "Duration:     4 hrs                                   \n";
+    cout << "Cost:         Rs. 40,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 4:  CA - 751                                   \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         06-03-2025                              \n";
+    cout << "Time:         07:00 AM                                \n";
+    cout << "Duration:     4 hrs                                   \n";
+    cout << "Cost:         Rs. 35,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+    cout << "\n---------------------------------------------------------\n";
+    cout << "Flight 5:  CA - 498                                  \n";
+    cout << "---------------------------------------------------------\n";
+    cout << "Date:         10-01-2025                              \n";
+    cout << "Time:         02:00 AM                                \n";
+    cout << "Duration:     4 hrs                                   \n";
+    cout << "Cost:         Rs. 32,000                              \n";
+    cout << "---------------------------------------------------------\n";
+
+
+
+
+    cout << "\n===========================================================\n";
+    cout << "     Thank you for choosing S k y l i n e  A i r w a y s !            \n";
+    cout << "        We look forward to serving you on board.          \n";
+    cout << "===========================================================\n";
+    cout << "                       Have a great flight!                 \n";
+    cout << "===========================================================\n";
+
+
+
+            // Take flight from user
+
+            cout << "\nSelect the flight: ";
+
+            cin >> chooseFlight;
+
+
+            // Check which flight user has select and store flight charges
+
+            if (chooseFlight == 1)
+
+            {
+
+                flightCharges = 20000;
+
+                cout << "\n____________You have successfully booked the flight CA - 198________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 2)
+
+            {
+
+                flightCharges = 20000;
+
+                cout << "\n____________You have successfully booked the flight CA - 668________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 3)
+
+            {
+
+                flightCharges = 40000;
+
+                cout << "\n____________You have successfully booked the flight CA - 938________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 4)
+
+            {
+                flightCharges = 35000;
+
+                cout << "\n____________You have successfully booked the flight CA - 751________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 5)
+
+            {
+
+                flightCharges = 32000;
+
+                cout << "\n____________You have successfully booked the flight CA - 498________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else
+
+            {
+
+                // If user entered invalid key then flight() function run again
+
+                cout << "You are entered invalid key, Please try again! " << endl;
+                cout << endl;
+
+                flights();
+
+            }
+
+            // For go back to Main menu
+
+            cout << "\nPress any key to go back to Main menu: "
+
+                 << endl;
+
+            cin >> backMainmenu;
+
+            if (backMainmenu == 1)
+
+            {
+
+                mainMenu();
+
+            }
+
+            else
+
+            {
+
+                mainMenu();
+
+            }
+
+        case 3:
+
+            cout << "\n*****************************************************\n";
+cout << "         WELCOME TO   S k y l i n e  A i r w a y s                      \n";
+cout << "*****************************************************\n";
+cout << "\n................. YOUR COMFORT IS OUR PRIORITY .................\n";
+cout << "                       ....................                         \n";
+cout << "                     Enjoy the Journey!                             \n";
+cout << "                 Where Every Mile Feels Like Home...                 \n";
+cout << "\n_______________________________________________________\n";
+cout << "                FOLLOWING ARE THE FLIGHTS AVAILABLE                 \n";
+cout << "_______________________________________________________\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 1:  US - 898                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         12-02-2025                              \n";
+cout << "Time:         07:00 AM                                \n";
+cout << "Duration:     14 hrs                                  \n";
+cout << "Cost:         Rs. 70,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 2:  US - 738                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         15-02-2025                              \n";
+cout << "Time:         09:00 AM                                \n";
+cout << "Duration:     16 hrs                                  \n";
+cout << "Cost:         Rs. 80,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 3:  US - 894                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         20-03-2025                              \n";
+cout << "Time:         07:30 AM                                \n";
+cout << "Duration:     12 hrs                                  \n";
+cout << "Cost:         Rs. 70,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 3:  US - 894                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         20-03-2025                              \n";
+cout << "Time:         07:30 AM                                \n";
+cout << "Duration:     12 hrs                                  \n";
+cout << "Cost:         Rs. 70,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 4:  US- 202                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         25-02-2024                              \n";
+cout << "Time:         11:15 AM                                \n";
+cout << "Duration:     10 hrs                                  \n";
+cout << "Cost:         Rs. 65,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 5:  US - 404                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         01-01-2025                              \n";
+cout << "Time:         06:45 PM                                \n";
+cout << "Duration:     8 hrs                                   \n";
+cout << "Cost:         Rs. 50,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+
+cout << "\n===========================================================\n";
+cout << "     Thank you for choosing S k y l i n e  A i r w a y s !                \n";
+cout << "        We look forward to serving you on board.          \n";
+cout << "===========================================================\n";
+cout << "                       Have a great flight!                 \n";
+cout << "===========================================================\n";
+
+
+
+
+            // Take flight from user
+
+            cout << "\nSelect the flight: ";
+
+            cin >> chooseFlight;
+
+            // Check which flight user has select and store flight charges
+
+
+            if (chooseFlight == 1)
+
+            {
+
+
+                flightCharges = 70000;
+
+                cout << "\n____________You have successfully booked the flight USA - 898________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 2)
+
+
+
+            {
+
+                flightCharges = 80000;
+
+                cout << "\n____________You have successfully booked the flight USA - 738________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 3)
+
+            {
+
+                flightCharges = 70000;
+
+                cout << "\n____________You have successfully booked the flight USA - 894________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 4)
+
+            {
+
+
+                flightCharges = 65000;
+
+                cout << "\n____________You have successfully booked the flight USA - 202________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 5)
+            {
+
+                flightCharges = 50000;
+
+                cout << "\n____________You have successfully booked the flight USA - 404________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else
+
+
+            {
+
+                // If user entered invalid key then flight() function run again
+
+                cout << "You are entered invalid key, Please try again! " << endl;
+                cout << endl;
+
+                flights();
+
+            }
+
+            // For go back to Main menu
+
+            cout << "\nPress any key to go back to Main menu: " << endl;
+            cin >> backMainmenu;
+
+            if (backMainmenu == 1)
+
+            {
+
+                mainMenu();
+
+
+            }
+
+            else
+
+            {
+
+                mainMenu();
+
+            }
+
+        case 4:
+
+            cout << "\n*****************************************************\n";
+cout << "         WELCOME TO    S k y l i n e  A i r w a y s                      \n";
+cout << "*****************************************************\n";
+cout << "\n................. YOUR COMFORT IS OUR PRIORITY .................\n";
+cout << "                       ....................                         \n";
+cout << "                     Enjoy the Journey!                             \n";
+cout << "                 Where Every Mile Feels Like Home...                 \n";
+cout << "\n_______________________________________________________\n";
+cout << "                FOLLOWING ARE THE FLIGHTS AVAILABLE                 \n";
+cout << "_______________________________________________________\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 1:  UK - 198                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         12-02-2025                              \n";
+cout << "Time:         07:00 AM                                \n";
+cout << "Duration:     14 hrs                                  \n";
+cout << "Cost:         Rs. 70,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 2:  UK - 138                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         15-02-2025                              \n";
+cout << "Time:         09:00 AM                                \n";
+cout << "Duration:     16 hrs                                  \n";
+cout << "Cost:         Rs. 80,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 3:  UK - 305                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         18-03-2025                              \n";
+cout << "Time:         10:30 AM                                \n";
+cout << "Duration:     12 hrs                                  \n";
+cout << "Cost:         Rs. 65,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 4:  UK - 407                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         25-04-2025                              \n";
+cout << "Time:         02:00 PM                                \n";
+cout << "Duration:     9 hrs                                   \n";
+cout << "Cost:         Rs. 50,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 5:  UK - 512                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         05-05-2025                              \n";
+cout << "Time:         08:00 PM                                \n";
+cout << "Duration:     15 hrs                                  \n";
+cout << "Cost:         Rs. 75,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n===========================================================\n";
+cout << "     Thank you for choosing S k y l i n e  A i r w a y s !                \n";
+cout << "        We look forward to serving you on board.          \n";
+cout << "===========================================================\n";
+cout << "                       Have a great flight!                 \n";
+cout << "===========================================================\n";
+
+
+
+            // Take flight from user
+
+            cout << "\nSelect the flight: ";
+
+            cin >> chooseFlight;
+
+
+            // Check which flight user has select and store flight charges
+
+
+
+            if (chooseFlight == 1)
+
+            {
+
+                flightCharges = 70000;
+
+                cout << "\n____________You have successfully booked the flight UK - 198________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 2)
+
+            {
+
+                flightCharges = 80000;
+
+                cout << "\n____________You have successfully booked the flight UK - 138________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 3)
+
+            {
+
+                flightCharges = 65000;
+
+                cout << "\n____________You have successfully booked the flight UK - 305________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 4)
+
+            {
+
+                flightCharges = 50000;
+                cout << "\n____________You have successfully booked the flight UK - 407________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 5)
+
+            {
+                flightCharges = 75000;
+
+                cout << "\n____________You have successfully booked the flight UK - 512________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else
+
+            {
+
+
+                // If user entered invalid key then flight() function run again
+
+                cout << "You are entered invalid key, Please try again! " << endl;
+                cout << endl;
+
+                flights();
+
+
+            }
+            // For go back to Main menu
+
+            cout << "\nPress any key to go back to Main menu: " << endl;
+            cin >> backMainmenu;
+
+            if (backMainmenu == 1)
+
+            {
+
+                mainMenu();
+
+            }
+
+            else
+
+            {
+
+                mainMenu();
+
+            }
+
+        case 5:
+
+            cout << "\n_____________Welcome to   S k y l i n e  A i r w a y s _____________\n"
+                 << endl;
+            cout << "..............YOUR COMFORT IS OUR PERIORITY..........." << endl;
+            cout << "   ................Enjoy the journey!.............." << endl;
+            cout << "\nFollowing are the flights \n"
+                 << endl;
+
+
+            // Flight details
+
+            cout << "\n*****************************************************\n";
+cout << "         WELCOME TO     S k y l i n e  A i r w a y s                \n";
+cout << "*****************************************************\n";
+cout << "\n................. YOUR COMFORT IS OUR PRIORITY .................\n";
+cout << "                       ....................                         \n";
+cout << "                     Enjoy the Journey!                             \n";
+cout << "                 Where Every Mile Feels Like Home...                 \n";
+cout << "\n_______________________________________________________\n";
+cout << "                FOLLOWING ARE THE FLIGHTS AVAILABLE                 \n";
+cout << "_______________________________________________________\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 1:  AU - 298                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         12-02-2025                              \n";
+cout << "Time:         07:00 AM                                \n";
+cout << "Duration:     14 hrs                                  \n";
+cout << "Cost:         Rs. 70,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 2:  AU - 238                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         15-02-2025                              \n";
+cout << "Time:         09:00 AM                                \n";
+cout << "Duration:     16 hrs                                  \n";
+cout << "Cost:         Rs. 80,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 3:  AU - 305                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         20-03-2025                              \n";
+cout << "Time:         09:00 AM                                \n";
+cout << "Duration:     11 hrs                                  \n";
+cout << "Cost:         Rs. 60,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 4:  AU - 407                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         15-04-2025                              \n";
+cout << "Time:         03:30 PM                                \n";
+cout << "Duration:     8 hrs                                   \n";
+cout << "Cost:         Rs. 45,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 5:  AU - 512                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         10-05-2025                              \n";
+cout << "Time:         07:45 PM                                \n";
+cout << "Duration:     14 hrs                                  \n";
+cout << "Cost:         Rs. 72,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n===========================================================\n";
+cout << "     Thank you for choosing S k y l i n e  A i r w a y s !         \n";
+cout << "        We look forward to serving you on board.          \n";
+cout << "===========================================================\n";
+cout << "                       Have a great flight!                 \n";
+cout << "===========================================================\n";
+
+
+            // Take flight from user
+
+            cout << "\nSelect the flight: ";
+
+            cin >> chooseFlight;
+
+            // Check which flight user has select and store flight charges
+
+            if (chooseFlight == 1)
+
+            {
+
+
+                flightCharges = 70000;
+
+                cout << "\n____________You have successfully booked the flight AU - 298________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+            else if (chooseFlight == 2)
+
+            {
+
+                flightCharges = 80000;
+
+                cout << "\n____________You have successfully booked the flight AU - 238________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+             else if (chooseFlight == 3)
+
+            {
+
+                flightCharges = 60000;
+
+                cout << "\n____________You have successfully booked the flight AU - 305_______________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+
+            }
+
+             else if (chooseFlight == 4)
+
+            {
+
+                flightCharges = 45000;
+                cout << "\n____________You have successfully booked the flight AU - 407________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+             else if (chooseFlight == 5)
+            {
+                flightCharges = 72000;
+                cout << "\n____________You have successfully booked the flight AU - 512________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+            else
+            {
+                // If user entered invalid key then flight() function run again
+                cout << "You are entered invalid key, Please try again! " << endl;
+                cout << endl;
+                flights();
+            }
+            // For go back to Main menu
+            cout << "\nPress any key to go back to Main menu: " << endl;
+            cin >> backMainmenu;
+            if (backMainmenu == 1)
+            {
+                mainMenu();
+            }
+            else
+            {
+                mainMenu();
+            }
+        case 6:
+            cout << "\n*****************************************************\n";
+cout << "         WELCOME TO     S k y l i n e  A i r w a y s                   \n";
+cout << "*****************************************************\n";
+cout << "\n................. YOUR COMFORT IS OUR PRIORITY .................\n";
+cout << "                       ....................                         \n";
+cout << "                     Enjoy the Journey!                             \n";
+cout << "                 Where Every Mile Feels Like Home...                 \n";
+cout << "\n_______________________________________________________\n";
+cout << "                FOLLOWING ARE THE FLIGHTS AVAILABLE                 \n";
+cout << "_______________________________________________________\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 1:  EUR - 458                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         14-03-2025                              \n";
+cout << "Time:         10:00 AM                                \n";
+cout << "Duration:     12 hrs                                  \n";
+cout << "Cost:         Rs. 60,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 2:  EUR - 312                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         17-03-2025                              \n";
+cout << "Time:         03:00 PM                                \n";
+cout << "Duration:     11 hrs                                  \n";
+cout << "Cost:         Rs. 65,000                               \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 3:  EUR - 315                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         22-03-2025                              \n";
+cout << "Time:         10:00 AM                                \n";
+cout << "Duration:     12 hrs                                  \n";
+cout << "Cost:         Rs. 70,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 4:  EUR - 418                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         10-04-2025                              \n";
+cout << "Time:         01:30 PM                                \n";
+cout << "Duration:     9 hrs                                   \n";
+cout << "Cost:         Rs. 50,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+cout << "\n---------------------------------------------------------\n";
+cout << "Flight 5:  EUR - 522                                   \n";
+cout << "---------------------------------------------------------\n";
+cout << "Date:         30-04-2025                              \n";
+cout << "Time:         06:45 PM                                \n";
+cout << "Duration:     14 hrs                                  \n";
+cout << "Cost:         Rs. 80,000                              \n";
+cout << "---------------------------------------------------------\n";
+
+
+
+
+cout << "\n===========================================================\n";
+cout << "     Thank you for choosing S k y l i n e  A i r w a y s !             \n";
+cout << "        We look forward to serving you on board.          \n";
+cout << "===========================================================\n";
+cout << "                       Have a great flight!                 \n";
+cout << "===========================================================\n";
+
+
+
+            // Take flight from user
+            cout << "\nSelect the flight: ";
+            cin >> chooseFlight;
+
+            // Check which flight user has select and store flight charges
+            if (chooseFlight == 1)
+            {
+                flightCharges = 70000;
+                cout << "\n____________You have successfully booked the flight EUR - 398________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+            else if (chooseFlight == 2)
+            {
+                flightCharges = 80000;
+                cout << "\n____________You have successfully booked the flight EUR - 338________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+            else if (chooseFlight == 3)
+            {
+                flightCharges = 70000;
+                cout << "\n____________You have successfully booked the flight EUR - 315________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+            else if (chooseFlight == 4)
+            {
+                flightCharges = 50000;
+                cout << "\n____________You have successfully booked the flight EUR - 418________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+            else if (chooseFlight == 5)
+            {
+                flightCharges = 80000;
+                cout << "\n____________You have successfully booked the flight EUR - 552________________" << endl;
+                cout << "            NOTE: You can go back to menu and take your ticket" << endl;
+            }
+            else
+            {
+                // If user entered invalid key then flight() function run again
+                cout << "You are entered invalid key, Please try again! " << endl;
+                cout << endl;
+                flights();
+            }
+            // For go back to Main menu
+            cout << "\nPress any key to go back to Main menu: " << endl;
+            cin >> backMainmenu;
+            if (backMainmenu == 1)
+            {
+                mainMenu();
+            }
+            else
+            {
+                mainMenu();
+            }
+        }
+    }
+};
+
+float Registration::flightCharges;
+
+int Registration::chooseCountry;
+
+
+// This is Ticket class for display Customer detail
+
+class Ticket : public Registration, Details
+
+{
+
+public:
+
+    void Bill()
+
+
+    {
+
+        string destination;
+
+        ofstream out("records.txt"); // Detail store in records.txt file
+
+        {
+            out << "\n";
+            out << "_________SKYLINE Airlines__________" << endl;
+            out << "   _________Ticket___________" << endl;
+            out << "     _____________________" << endl;
+            out << "\n";
+            out << "Customer ID: " << Details::id << "\n";
+            out << "Customer Name: " << Details::name << "\n";
+            out << "Customer Gender: " << Details::gender << "\n";
+            out << endl;
+
+            // Check which country user have selected
+            if (Registration::chooseCountry == 1)
+            {
+                destination = "Dubai";
+            }
+            else if (Registration::chooseCountry == 2)
+            {
+                destination = "Canada";
+            }
+            else if (Registration::chooseCountry == 3)
+            {
+                destination = "USA";
+            }
+            else if (Registration::chooseCountry == 4)
+            {
+                destination = "UK";
+            }
+            else if (Registration::chooseCountry == 5)
+            {
+                destination = "Australia";
+            }
+            else if (Registration::chooseCountry == 6)
+            {
+                destination = "Europe";
+            }
+            // Print destination and flight cost
+
+            out << "Destination:\t\t" << destination << endl;
+
+            out << "Flight cost: \t\t" << Registration::flightCharges << endl;
+
+        }
+        out.close(); // close file
+
+    }
+
+    void displayBill()
+
+    {
+        ifstream in("records.txt"); // for print all details from records.txt
+
+        {
+            if (!in)
+            {
+                cout << "File error!";
+            }
+            while (!in.eof())
+            {
+                in.getline(arr, 100);
+                cout << arr << endl;
+            }
+        }
+        in.close(); // close file
+
+    }
+};
+
+
+
+
+struct FlightSchedule
+ {
+
+    string departureCity;
+
+    string destinationCity;
+
+    string flightTime; // Flight departure time
+
+};
+
+
+void viewCurrentSchedule()
+
+{
+
+    // Simple flight schedule data
+
+    vector<FlightSchedule> schedule =
+    {
+        {"Mumbai", "Delhi", "08:00 AM"},
+
+        {"Delhi", "Kolkata", "10:30 AM"},
+
+        {"Chennai", "Mumbai", "01:00 PM"},
+
+        {"Bengaluru", "Chennai", "03:30 PM"},
+
+        {"Kolkata", "Delhi", "06:00 PM"}
+
+    };
+
+
+    cout << "\n=================== Current Flight Schedule ===================\n";
+    cout << "Flight No. | Departure | Destination | Time\n";
+    cout << "--------------------------------------------------------------\n";
+
+    // Display all available flights
+
+
+    for (size_t i = 0; i < schedule.size(); i++)
+
+
+        {
+
+        cout << "  " << i+1 << "       | " << schedule[i].departureCity
+             << "    | " << schedule[i].destinationCity
+             << "    | " << schedule[i].flightTime << endl;
+
+    }
+    cout << "\n--------------------------------------------------------------\n";
+
+}
+
+
+void bookFlight()
+{
+
+    vector<FlightSchedule> schedule =
+    {
+        {"Mumbai", "Delhi", "08:00 AM"},
+
+        {"Delhi", "Kolkata", "10:30 AM"},
+
+        {"Chennai", "Mumbai", "01:00 PM"},
+
+        {"Bengaluru", "Chennai", "03:30 PM"},
+
+        {"Kolkata", "Delhi", "06:00 PM"}
+
+    };
+
+    // Display available flights
+
+
+    cout << "\n=================== Available Flights ===================\n";
+    cout << "Flight No. | Departure | Destination | Time\n";
+    cout << "--------------------------------------------------------------\n";
+    for (size_t i = 0; i < schedule.size(); i++)
+        {
+        cout << "  " << i+1 << "       | " << schedule[i].departureCity
+
+             << "    | " << schedule[i].destinationCity
+
+             << "    | " << schedule[i].flightTime << endl;
+
+    }
+    cout << "\n--------------------------------------------------------------\n";
+
+    int choice;
+
+    cout << "\nSelect the flight number you want to book: ";
+
+    cin >> choice;
+
+
+    if (choice >= 1 && choice <= schedule.size())
+
+        {
+
+        cout << "\nYou have selected: " << schedule[choice-1].departureCity
+
+             << " to " << schedule[choice-1].destinationCity
+
+             << " at " << schedule[choice-1].flightTime << endl;
+
+        cout << "\nDo you want to confirm your booking? (y/n): ";
+
+        char confirm;
+
+        cin >> confirm;
+
+        if (confirm == 'y' || confirm == 'Y')
+
+            {
+
+            cout << "\nYour flight has been booked successfully!\n";
+        }
+        else
+
+        {
+
+            cout << "\nBooking canceled.\n";
+        }
+
+    }
+    else
+
+     {
+        cout << "\nInvalid flight selection.\n";
+    }
+}
+
+
+
+
+#define V 5  // Number of airports (vertices)
+
+
+
+// Function to find the vertex with the minimum distance value
+
+int minDistance(vector<int>& dist, vector<bool>& sptSet)
+
+{
+
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < V; v++)
+        {
+        if (!sptSet[v] && dist[v] <= min)
+         {
+            min = dist[v];
+
+            min_index = v;
+        }
+
+    }
+
+    return min_index;
+
+}
+
+
+
+
+// Function to implement Dijkstra's algorithm to find shortest path
+
+
+void dijkstra(int graph[V][V], int src)
+
+{
+
+    vector<int> dist(V, INT_MAX);
+
+    // Distance vector to store minimum distance to each vertex
+    vector<bool> sptSet(V, false);
+
+    // sptSet[i] will be true if vertex i is included in the shortest path
+    dist[src] = 0;
+
+    // Distance from source to source is 0
+
+    for (int count = 0; count < V - 1; count++)
+
+        {
+
+        int u = minDistance(dist, sptSet);
+
+        // Pick the minimum distance vertex
+
+        sptSet[u] = true;
+
+        // Mark the picked vertex as processed
+
+        for (int v = 0; v < V; v++)
+
+            {
+
+            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v]) {
+                dist[v] = dist[u] + graph[u][v];  // Update the distance if a shorter path is found
+            }
+
+        }
+
+    }
+
+
+
+    cout << "Airport \t Distance from Source\n";
+
+    for (int i = 0; i < V; i++)
+
+        {
+        cout << i << " \t\t " << dist[i] << endl;
+
+
+    }
+
+}
+
+
+
+// Function to implement dynamic pricing based on customer demand and seat availability
+
+
+void dynamicPricing(vector<int>& seats, vector<int>& demand)
+
+{
+    float basePrice = 1000.0;
+
+
+      // Base price for a flight
+    float priceMultiplier = 1.0;
+
+
+     // Default price multiplier (no change)
+
+    cout << "\nUpdated Flight Prices based on Demand:\n";
+
+    for (size_t i = 0; i < seats.size(); ++i)
+        {
+        // If demand exceeds the number of seats, increase the price
+
+
+        if (demand[i] > seats[i])
+        {
+            priceMultiplier = 1.2;
+
+
+            // Increase price by 20% if demand exceeds seats
+        } else {
+            priceMultiplier = 1.0;
+
+
+            // No price change if seats are sufficient
+        }
+
+        // Calculate the final price
+
+
+        float finalPrice = basePrice * priceMultiplier;
+
+        // Display the updated price for the flight
+
+
+        cout << "Flight " << (i + 1) << " - New Price: Rs. " << finalPrice << endl;
+    }
+
+}
+
+
+void categorizePassenger(int age)
+
+{
+
+    if (age < 18)
+
+        {
+        cout << "Passenger is a Child.\n";
+    } else if (age >= 18 && age < 60)
+    {
+        cout << "Passenger is an Adult.\n";
+    } else
+    {
+        cout << "Passenger is a Senior.\n";
+    }
+}
+
+
+stack<string> reservedSeats;
+
+// Function to reserve a seat
+
+
+void reserveSeat(string seat)
+{
+    reservedSeats.push(seat);
+    cout << "Seat " << seat << " has been reserved.\n";
+}
+
+// Function to cancel a reservation
+
+
+void cancelReservation()
+{
+    if (reservedSeats.empty())
+        {
+        cout << "No seats to cancel.\n";
+    } else
+    {
+        string seat = reservedSeats.top();
+        reservedSeats.pop();
+        cout << "Reservation for seat " << seat << " has been canceled.\n";
+    }
+}
+
+
+void showAvailableSeats()
+{
+    int totalSeats = 100;
+
+    int reserved = reservedSeats.size();
+
+    int available = totalSeats - reserved;
+
+    cout << "Available seats: " << available << endl;
+
+}
+
+
+
+void viewAvailableServices()
+
+{
+    cout << "\n\t===================================================\n";
+    cout << "\t|               Available Services                |\n";
+    cout << "\t===================================================\n";
+    cout << "1. In-flight meals\n";
+    cout << "2. Luggage handling\n";
+    cout << "3. Priority check-in\n";
+    cout << "4. Wi-Fi services\n";
+    cout << "5. Seat selection\n";
+}
+
+
+void displayContactInfo()
+
+{
+    cout << "\n\t===================================================\n";
+    cout << "\t|             Skyline Airways Contact Info         |\n";
+    cout << "\t===================================================\n";
+    cout << "Phone: 1800-123-4567\n";
+    cout << "Email: support@skylineairways.com\n";
+    cout << "Website: www.skylineairways.com\n";
+}
+
+
+void displayBaggagePolicy() {
+    cout << "\nBaggage Policy:\n";
+    cout << "1. Economy Class: 20kg check-in, 7kg carry-on.\n";
+    cout << "2. Business Class: 30kg check-in, 10kg carry-on.\n";
+    cout << "3. First Class: 40kg check-in, 15kg carry-on.\n";
+    cout << "4. Excess baggage charges: 1000 per kg.\n";
+}
+
+void showMealOptions() {
+    cout << "\nAvailable Meals:\n";
+    cout << "1. Vegetarian Meal\n";
+    cout << "2. Non-Vegetarian Meal\n";
+    cout << "3. Vegan Meal\n";
+    cout << "4. Gluten-Free Meal\n";
+    cout << "5. Kids Meal\n";
+}
+
+void processPayment() {
+    cout << "\nChoose Payment Method:\n";
+    cout << "1. Credit Card\n";
+    cout << "2. Debit Card\n";
+    cout << "3. UPI\n";
+    cout << "4. E-Wallet\n";
+    cout << "Enter your choice: ";
+    int choice;
+    cin >> choice;
+
+    switch (choice)
+    {
+        case 1:
+            cout << "Processing payment via Credit Card...\n";
+            break;
+        case 2:
+            cout << "Processing payment via Debit Card...\n";
+            break;
+        case 3:
+            cout << "Processing payment via UPI...\n";
+            break;
+        case 4:
+            cout << "Processing payment via E-Wallet...\n";
+            break;
+        default:
+            cout << "Invalid payment option.\n";
+    }
+}
+
+void addTravelInsurance()
+{
+
+    cout << "Would you like to add travel insurance? (y/n): ";
+    char choice;
+    cin >> choice;
+    if (choice == 'y' || choice == 'Y')
+        {
+
+        cout << "Travel insurance added for 1200 INR Extra.\n";
+    }
+    else
+        {
+
+        cout << "No travel insurance added.\n";
+
+    }
+
+}
+
+void groupBooking()
+{
+
+    cout << "Enter the number of passengers in your group: ";
+    int numPassengers;
+    cin >> numPassengers;
+
+    if (numPassengers > 5)
+        {
+
+        cout << "You qualify for a 10% group discount!\n";
+
+    }
+    cout << "Group booking for " << numPassengers << " passengers confirmed.\n";
+
+}
+
+
+void multiCityBooking()
+{
+
+    cout << "Enter the number of destinations (2-5): ";
+    int n;
+    cin >> n;
+
+    if (n < 2 || n > 5)
+        {
+
+        cout << "Invalid input. You can book between 2 and 5 destinations.\n";
+        return;
+
+    }
+
+    string cities[n];
+    cout << "Enter the cities sequentially:\n";
+    for (int i = 0; i < n; ++i) {
+        cout << "City " << i + 1 << ": ";
+        cin >> cities[i];
+    }
+
+    cout << "\nYour multi-city trip is booked for:\n";
+    for (int i = 0; i < n; ++i) {
+        cout << cities[i];
+        if (i < n - 1) cout << " -> ";
+    }
+    cout << "\nThank you for booking with us!\n";
+}
+
+
+
+void upgradeSeatClass()
+{
+
+    cout << "\nUpgrade Seat Class:\n";
+    cout << "1. Economy to Business (1500 extra)\n";
+    cout << "2. Business to First Class (3000 extra)\n";
+    cout << "Enter your choice: ";
+    int choice;
+    cin >> choice;
+
+    switch (choice)
+     {
+
+        case 1:
+            cout << "Seat upgraded to Business Class. Additional $150 charged.\n";
+            break;
+        case 2:
+            cout << "Seat upgraded to First Class. Additional $300 charged.\n";
+            break;
+        default:
+            cout << "Invalid choice.\n";
+            break;
+
+    }
+
+}
+
+void registerEmergencyContact()
+{
+
+    string name, relationship, phone;
+    cout << "Enter Emergency Contact Name: ";
+    cin.ignore();
+    getline(cin, name);
+    cout << "Enter Relationship: ";
+    getline(cin, relationship);
+    cout << "Enter Phone Number: ";
+    getline(cin, phone);
+
+    cout << "\nEmergency Contact Registered:\n";
+    cout << "Name: " << name << "\nRelationship: " << relationship
+         << "\nPhone: " << phone << endl;
+
+}
+
+
+
+void collectFeedback()
+{
+
+    string feedback;
+    cout << "\nPlease provide your feedback on our services: ";
+    cin.ignore();
+    getline(cin, feedback);
+    cout << "\nThank you for your feedback! We value your input.\n";
+
+}
+
+
+
+void mainMenu()
+{
+
+    int option;
+    int backMainmenu;
+
+    cout << "\n\t===================================================\n";
+    cout << "\t|                                                 |\n";
+    cout << "\t|            S k y l i n e  A i r w a y s         |\n";
+    cout << "\t|                                                 |\n";
+    cout << "\t===================================================\n";
+    cout << "\t|                  Main Menu                      |\n";
+    cout << "\t===================================================\n";
+    cout << "\t|                                                 |\n";
+    cout << "\t|   1 Add the Customer Details                    |\n";
+    cout << "\t|   2 Flight Registration(international flights)  |\n";
+    cout << "\t|   3 Ticket and Charges                          |\n";
+    cout << "\t|   4 coustomer support                           |\n";
+    cout << "\t|   5 booking(DOMESTIC FLIGHTS)                   |\n";
+    cout << "\t|   6 FLIGHT PATH OPTIMISATION  (Dijkstra�s Algo) |\n";
+    cout << "\t|   7 OPTIMIZE TICKET PRICING (Dynamic pricing)  |\n";
+    cout << "\t|   8 passangers categories                       |\n";
+    cout << "\t|   9 Reserve or cancel booking                   |\n";
+    cout << "\t|   10 show available seats                       |\n";
+    cout << "\t|   11 Offers on flights                          |\n";
+    cout << "\t|   12 Display contact info                       |\n";
+    cout << "\t|   13 View available services                    |\n";
+    cout << "\t|   14 Flight class options                       |\n";
+    cout << "\t|   15 Airline Baggage Policy                     |\n";
+    cout << "\t|   16 Airline meal options                       |\n";
+    cout << "\t|   17 Process payment                            |\n";
+    cout << "\t|   18 Airline Travel Insurance                   |\n";
+    cout << "\t|   19 For Group Booking                          |\n";
+    cout << "\t|   20 For Multicity Booking                      |\n";
+    cout << "\t|   21 Upgrade Seat Class                         |\n";
+    cout << "\t|   22 Emergency Contact Info                     |\n";
+    cout << "\t|   23 FEEDBACK                                   |\n";
+    cout << "\t|   24 EXIT                                       |\n";
+    cout << "\t|                                                 |\n";
+    cout << "\t===================================================\n";
+    cout << "\t|   Please select an option (1-24):               |\n";
+    cout << "\t===================================================\n";
+
+    // Choose the option
+
+
+    cout << "\nEnter the choice: ";
+    cin >> option;
+
+    // This is above class Objects
+
+
+    Details d;
+
+    Registration r;
+
+    Ticket t;
+
+
+    switch (option)
+
+    {
+    // add customer details
+
+
+    case 1:
+        cout << "\n_________________Customers Details_________________\n"
+             << endl;
+        d.information();
+        cout << "Press any key to go back to Main Menu ";
+        cin >> backMainmenu;
+
+        if (backMainmenu == 1)
+        {
+            mainMenu();
+        }
+        else
+        {
+            mainMenu();
+        }
+        break;
+
+    // Book flight
+
+
+    case 2:
+        cout << "_________________Book Flight________________\n"
+             << endl;
+        r.flights();
+        break;
+
+    // Get Ticket
+
+
+    case 3:
+        cout << "_________________GET YOUR TICKET_________________\n"
+             << endl;
+        t.Bill();
+        cout << "Note: Your ticket is printed, you can collect it \n"
+             << endl;
+        cout << "1. Display your ticket(PRESS 1): ";
+        cin >> backMainmenu;
+
+        if (backMainmenu == 1)
+        {
+            t.displayBill();
+            cout << "Press any key to go back to Main menu: ";
+            cin >> backMainmenu;
+            if (backMainmenu == 1)
+            {
+                mainMenu();
+            }
+            else
+            {
+                mainMenu();
+            }
+        }
+        else
+        {
+            mainMenu();
+        }
+        break;
+        case 4:
+    cout << "\nYou have selected 'Contact Customer Support'.\n";
+    cout << "\nPlease choose one of the following options:\n";
+    cout << "1. Call Customer Support\n";
+    cout << "2. Send an Email to Support\n";
+    cout << "Please select an option (1-2): ";
+
+    int supportOption;
+    cin >> supportOption;
+
+    // Handle the user selection for customer support
+
+
+    switch (supportOption)
+    {
+
+        case 1:
+            cout << "\nCalling Customer Support...\n";
+            cout << "Please wait while we connect you to a representative.\n";
+            cout << "Support Hotline: 1800-123-4567\n";
+
+             // Replace with your real support hotline
+
+
+            // You can add code here to simulate connecting or provide more info.
+
+
+
+            mainMenu();
+
+            break;
+
+
+        case 2:
+            cout << "\nPlease write your query below and send it to customer.support@skylineairways.com\n";
+            cout << "Enter your query: ";
+            string query;
+            cin.ignore();
+
+            // To clear the newline character left by previous input
+            getline(cin, query);
+
+             // This allows multi-line input for queries
+            cout << "\nYour query has been sent to Customer Support. We will respond shortly.\n";
+
+            mainMenu();
+
+            break;
+
+
+
+
+
+    }
+
+    break;
+
+
+case 5:  // Book Flight
+
+
+                bookFlight();
+
+                 mainMenu();
+
+                break;
+
+
+
+case 6:
+    {
+        cout << "\n\t===================================================\n";
+        cout << "\t|          Flight Path Optimization (Dijkstra)    |\n";
+        cout << "\t===================================================\n";
+
+        // Define the flight graph (Adjacency Matrix)
+
+
+        int graph[5][5] =
+        {
+            {0, 10, 0, 30, 0},
+            {10, 0, 20, 0, 0},
+            {0, 20, 0, 0, 50},
+            {30, 0, 0, 0, 40},
+            {0, 0, 50, 40, 0}
+        };
+
+        int source;
+
+        cout << "Enter the source airport (0 - Mumbai, 1 - Delhi, 2 - Kolkata, 3 - Chennai, 4 - Hyderabad): ";
+        cin >> source;
+
+        // Call the Dijkstra function to find the shortest paths
+
+
+        dijkstra(graph, source);
+
+        // Dijkstra will print the shortest paths
+        mainMenu();
+        break;
+
+    }
+
+
+
+case 7:
+    {
+        cout << "\n\t===================================================\n";
+        cout << "\t|             Dynamic Pricing for Flights         |\n";
+        cout << "\t===================================================\n";
+
+        // Example flight data: Number of seats and customer demand for each flight
+
+
+        vector<int> seats = {100, 150, 120, 180};
+
+        // Seat capacities for 4 flights
+        vector<int> demand = {120, 130, 110, 90};
+
+        // Customer demand for each flight
+
+        // Display initial data
+
+
+        cout << "\nInitial Flight Data:\n";
+        cout << "Flight 1 - Seats: " << seats[0] << ", Demand: " << demand[0] << endl;
+        cout << "Flight 2 - Seats: " << seats[1] << ", Demand: " << demand[1] << endl;
+        cout << "Flight 3 - Seats: " << seats[2] << ", Demand: " << demand[2] << endl;
+        cout << "Flight 4 - Seats: " << seats[3] << ", Demand: " << demand[3] << endl;
+
+        // Call the dynamic pricing function to calculate and display the updated prices
+
+
+        dynamicPricing(seats, demand);
+
+        mainMenu();
+
+        break;
+
+    }
+
+
+
+    case 8:
+{
+    int age;
+    cout << "Enter passenger age: ";
+    cin >> age;
+    categorizePassenger(age);
+    mainMenu();
+    break;
+}
+
+
+
+case 9:
+{
+    string seat;
+    cout << "Enter seat number to reserve: ";
+    cin >> seat;
+    reserveSeat(seat);
+
+    // Optionally cancel reservation
+    cout << "Would you like to cancel a reservation? (y/n): ";
+    char cancel;
+    cin >> cancel;
+    if (cancel == 'y')
+        {
+
+        cancelReservation();
+
+    }
+    mainMenu();
+    break;
+}
+
+
+
+case 10: {
+                cout << "\n\t===================================================\n";
+                cout << "\t|            Seat Availability Report            |\n";
+                cout << "\t===================================================\n";
+                showAvailableSeats();
+
+                 // Example: show available seats based on current reservations
+            }
+            mainMenu();
+
+            break;
+
+
+
+
+case 11: {
+                cout << "\n\t===================================================\n";
+                cout << "\t|               Special Promotions               |\n";
+                cout << "\t===================================================\n";
+                cout << "Special promotion: Get 10% off on next booking!\n";
+                cout << "\n\t===================================================\n";
+                cout << "\t|             Seat Upgrade Options               |\n";
+                cout << "\t===================================================\n";
+                cout << "Upgrade to business class for just 2000 INR more!\n";
+
+}
+ mainMenu();
+break;
+
+case 12:
+      displayContactInfo();
+      mainMenu();
+                break;
+
+case 13:
+    viewAvailableServices();
+    mainMenu();
+           break;
+
+case 14:
+{
+    cout << "\n\t===================================================\n";
+    cout << "\t|      Displaying Flight Class Options             |\n";
+    cout << "\t===================================================\n";
+    cout << "\t| 1. Economy Class                                 |\n";
+    cout << "\t| 2. Business Class                                |\n";
+    cout << "\t| 3. First Class                                   |\n";
+    cout << "\t===================================================\n";
+    cout << "\t|                                                  |\n";
+    cout << "\t===================================================\n";
+
+}
+mainMenu();
+break;
+
+
+case 15:
+    {
+        displayBaggagePolicy();
+
+
+        mainMenu();
+
+
+         break;
+
+    }
+
+
+case 16:
+    {
+       showMealOptions();
+
+        mainMenu();
+
+         break;
+
+    }
+
+
+case 17:
+    {
+
+       processPayment();
+        mainMenu();
+         break;
+
+    }
+
+
+case 18:
+
+{
+       addTravelInsurance();
+
+        mainMenu();
+
+         break;
+
+    }
+
+ case 19:
+
+{
+      groupBooking();
+        mainMenu();
+         break;
+    }
+
+ case 20:
+
+{
+      multiCityBooking();
+
+        mainMenu();
+
+         break;
+
+    }
+
+case 21:
+
+{
+      upgradeSeatClass();
+
+        mainMenu();
+
+         break;
+
+
+    }
+
+case 22:
+
+{
+      registerEmergencyContact();
+
+        mainMenu();
+
+         break;
+
+    }
+
+case 23:
+
+{
+      collectFeedback();
+
+        mainMenu();
+
+         break;
+
+    }
+
+
+
+case 24:
+        cout << "\n\n";
+cout << "******************************************************\n";
+cout << "                    ________ THANK YOU ________       \n";
+cout << "                  ----------------------------       \n";
+cout << "               _______________________________     \n";
+cout << "              |                               |    \n";
+cout << "              |   YOUR PRESENCE WAS VALUABLE! |    \n";
+cout << "              |                               |    \n";
+cout << "               -------------------------------     \n";
+cout << "              _______ SAFE TRAVELS TO YOU! ______   \n";
+cout << "******************************************************\n";
+cout << "\n";
+cout << "      ------------------------------------------------\n";
+cout << "      |                                               |\n";
+cout << "      |     Thank you for using our services today!   |\n";
+cout << "      |    We hope you had a pleasant experience.     |\n";
+cout << "      |    Your satisfaction is our top priority.     |\n";
+cout << "      |    Wishing you all the best in your future    |\n";
+cout << "      |    endeavors!                                 |\n";
+cout << "      ------------------------------------------------\n";
+cout << "\n";
+cout << "       _________________________   __________________ \n";
+cout << "      |                         |  |                 |\n";
+cout << "      |  Your feedback matters! |  |  Share with Us  |\n";
+cout << "      |  Help us improve!       |  |  Stay in Touch  |\n";
+cout << "       _________________________   __________________ \n";
+cout << "\n";
+cout << "******************************************************\n";
+cout << "        Thank you for your time and we hope to see    \n";
+cout << "                 you again soon!                      \n";
+cout << "******************************************************\n";
+cout << "\n";
+cout << "                     ______________                  \n";
+cout << "                    |              |                 \n";
+cout << "                    |   Take Care  |                 \n";
+cout << "                    |   Come Back  |                 \n";
+cout << "                    |    Again!    |                 \n";
+cout << "                    |______________|                 \n";
+cout << "******************************************************\n";
+cout << "\n";
+
+         exit(1);
+
+
+
+    // If user entered invalid key then Main menu call again
+
+
+    default:
+
+        cout << "Invaild input, Please try again !\n"
+             << endl;
+        mainMenu();
+
+    }
+}
+
+int module3()
+{
+    // This is Management class Object
+
+
+    Management Mobj;
+
+
+    module3();
+}
+
+
+
+
+#include <iostream>
+
+
+#include <string>
+
+#include <vector>
+
+#include <map>
+
+#include <fstream>
+
+#include <ctime>
+
+#include <algorithm>
+
+
+using namespace std;
+
+
+// Define a struct for Baggage
+
+
+struct Baggage
+{
+
+    string id;
+
+    string passengerName;
+
+    string flightNumber;
+
+    string destination;
+
+    string timestamp;
+    double weight;
+
+     // New field to store baggage weight
+    bool isDamaged;
+
+    bool isCabinBaggage;
+
+    bool isLongDistance;
+
+    bool isLaptopBag;
+
+    // New field to indicate if the baggage is a laptop bag
+    bool isTiffinBag;
+
+     // New field to indicate if the baggage is a tiffin bag
+    bool isSportsBag;
+
+    // New field to indicate if the baggage is a sports bag
+    bool isMusicalInstrumentBag;
+
+    // New field to indicate if the baggage is a musical instrument bag
+    bool isMedicalEquipmentBag;
+
+     // New field to indicate if the baggage is a medical equipment bag
+    bool isHandbag;
+
+    // New field to indicate if the baggage is a handbag
+    bool isSmallSuitcase;
+
+    // New field to indicate if the baggage is a small suitcase
+
+};
+
+
+
+// Define a class for BaggageHandlingSystem
+
+class BaggageHandlingSystem
+
+{
+
+
+private:
+
+    map<string, Baggage> baggageMap;
+
+    // Map to store baggage information
+
+    // Helper function to get the current timestamp
+
+
+    string getCurrentTimestamp()
+
+    {
+
+        time_t now = time(0);
+
+        char buf[80];
+
+        struct tm* timeinfo = localtime(&now);
+
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", timeinfo);
+
+        return string(buf);
+
+
+    }
+
+
+
+    // Helper function to sort baggage by timestamp (ascending order)
+
+
+    vector<Baggage> sortBaggageByTimestamp()
+
+    {
+
+
+        vector<Baggage> sortedBaggage;
+
+        for (const auto& entry : baggageMap)
+
+            {
+
+
+            sortedBaggage.push_back(entry.second);
+
+
+        }
+
+        sort(sortedBaggage.begin(), sortedBaggage.end(), [](const Baggage& a, const Baggage& b)
+              {
+
+            return a.timestamp < b.timestamp;
+
+
+
+        });
+        return sortedBaggage;
+
+    }
+
+
+
+public:
+
+
+
+    // Function to add baggage
+
+
+    void addBaggage(const string& id, const string& passengerName, const string& flightNumber, const string& destination, double weight,
+                    bool isLaptopBag = false, bool isTiffinBag = false, bool isSportsBag = false, bool isMusicalInstrumentBag = false, bool isMedicalEquipmentBag = false,
+                    bool isHandbag = false, bool isSmallSuitcase = false)
+                     {
+        Baggage baggage;
+
+
+        baggage.id = id;
+
+
+        baggage.passengerName = passengerName;
+
+
+        baggage.flightNumber = flightNumber;
+
+
+        baggage.destination = destination;
+
+
+        baggage.timestamp = getCurrentTimestamp();
+
+
+        baggage.weight = weight;
+
+
+        baggage.isDamaged = false;
+
+         // Default values
+
+
+        baggage.isCabinBaggage = false;
+
+        // Default values
+        baggage.isLongDistance = false;
+
+
+        // Default values
+        baggage.isLaptopBag = isLaptopBag;
+
+        baggage.isTiffinBag = isTiffinBag;
+
+        baggage.isSportsBag = isSportsBag;
+
+        baggage.isMusicalInstrumentBag = isMusicalInstrumentBag;
+
+        baggage.isMedicalEquipmentBag = isMedicalEquipmentBag;
+
+        baggage.isHandbag = isHandbag;
+
+        baggage.isSmallSuitcase = isSmallSuitcase;
+
+
+        baggageMap[id] = baggage;
+
+        cout << "Baggage added successfully!" << endl;
+
+
+    }
+
+
+    // Function to remove baggage
+
+
+    void removeBaggage(const string& id)
+    {
+
+
+        if (baggageMap.find(id) != baggageMap.end())
+            {
+
+
+            baggageMap.erase(id);
+
+            cout << "Baggage removed successfully!" << endl;
+
+
+        }
+
+        else
+        {
+
+
+            cout << "Baggage not found!" << endl;
+
+        }
+
+    }
+
+
+    // Function to display baggage information
+
+
+    void displayBaggageInfo(const string& id) const
+    {
+
+        if (baggageMap.find(id) != baggageMap.end())
+        {
+
+
+            const Baggage& baggage = baggageMap.at(id);
+
+            cout << "Baggage ID: " << baggage.id << endl;
+
+            cout << "Passenger Name: " << baggage.passengerName << endl;
+
+            cout << "Flight Number: " << baggage.flightNumber << endl;
+
+            cout << "Destination: " << baggage.destination << endl;
+
+            cout << "Timestamp: " << baggage.timestamp << endl;
+
+            cout << "Weight: " << baggage.weight << " kg" << endl;
+
+            cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+
+            cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+
+            cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+
+            cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+
+            cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+
+            cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+
+            cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+
+            cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+
+            cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+
+            cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+
+
+        }
+         else
+            {
+
+            cout << "Baggage not found!" << endl;
+
+        }
+
+    }
+
+
+    // Function to display all baggage information
+
+
+    void displayAllBaggageInfo() const
+    {
+
+        if (baggageMap.empty())
+            {
+
+            cout << "No baggage records found!" << endl;
+            return;
+
+        }
+
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+
+            cout << "Baggage ID: " << baggage.id << endl;
+
+            cout << "Passenger Name: " << baggage.passengerName << endl;
+
+            cout << "Flight Number: " << baggage.flightNumber << endl;
+
+            cout << "Destination: " << baggage.destination << endl;
+
+            cout << "Timestamp: " << baggage.timestamp << endl;
+
+
+            cout << "Weight: " << baggage.weight << " kg" << endl;
+
+            cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+
+
+            cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+
+            cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+
+            cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+
+            cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+
+            cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+
+            cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+
+            cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+
+
+            cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+
+            cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+
+            cout << "-----------------------------" << endl;
+
+        }
+
+
+    }
+
+
+
+
+    // Function to update baggage information
+
+
+    void updateBaggage(const string& id, const string& newPassengerName, const string& newFlightNumber, const string& newDestination, double newWeight,
+                       bool newIsLaptopBag = false, bool newIsTiffinBag = false, bool newIsSportsBag = false, bool newIsMusicalInstrumentBag = false, bool newIsMedicalEquipmentBag = false,
+                       bool newIsHandbag = false, bool newIsSmallSuitcase = false)
+                       {
+
+        if (baggageMap.find(id) != baggageMap.end())
+            {
+
+            Baggage& baggage = baggageMap[id];
+
+            baggage.passengerName = newPassengerName;
+
+            baggage.flightNumber = newFlightNumber;
+
+            baggage.destination = newDestination;
+
+            baggage.weight = newWeight;
+
+            baggage.isLaptopBag = newIsLaptopBag;
+
+            baggage.isTiffinBag = newIsTiffinBag;
+
+            baggage.isSportsBag = newIsSportsBag;
+
+            baggage.isMusicalInstrumentBag = newIsMusicalInstrumentBag;
+
+            baggage.isMedicalEquipmentBag = newIsMedicalEquipmentBag;
+
+
+
+            baggage.isHandbag = newIsHandbag;
+
+            baggage.isSmallSuitcase = newIsSmallSuitcase;
+
+            cout << "Baggage information updated successfully!" << endl;
+
+
+        }
+        else
+            {
+
+            cout << "Baggage not found!" << endl;
+
+        }
+
+    }
+
+    // Function to display total baggage count
+    void displayTotalBaggageCount() const
+    {
+
+        cout << "Total number of baggage records: " << baggageMap.size() << endl;
+
+    }
+
+
+
+    // Function to display total baggage weight
+    void displayTotalBaggageWeight() const
+    {
+
+        double totalWeight = 0;
+        for (const auto& entry : baggageMap)
+            {
+
+            totalWeight += entry.second.weight;
+
+        }
+
+        cout << "Total weight of all baggage: " << totalWeight << " kg" << endl;
+
+    }
+
+
+
+    // Function to display the heaviest baggage
+    void displayHeaviestBaggage() const
+    {
+
+        if (baggageMap.empty())
+            {
+
+            cout << "No baggage records found!" << endl;
+            return;
+
+        }
+
+        auto heaviest = max_element(baggageMap.begin(), baggageMap.end(), [](const auto& a, const auto& b)
+                                    {
+
+            return a.second.weight < b.second.weight;
+
+        });
+
+        const Baggage& baggage = heaviest->second;
+        cout << "Heaviest Baggage ID: " << baggage.id << endl;
+        cout << "Passenger Name: " << baggage.passengerName << endl;
+        cout << "Flight Number: " << baggage.flightNumber << endl;
+        cout << "Destination: " << baggage.destination << endl;
+        cout << "Timestamp: " << baggage.timestamp << endl;
+        cout << "Weight: " << baggage.weight << " kg" << endl;
+
+    }
+
+    // Function to display the lightest baggage
+    void displayLightestBaggage() const
+    {
+
+        if (baggageMap.empty())
+            {
+
+            cout << "No baggage records found!" << endl;
+            return;
+
+        }
+
+        auto lightest = min_element(baggageMap.begin(), baggageMap.end(), [](const auto& a, const auto& b)
+        {
+
+            return a.second.weight < b.second.weight;
+
+        });
+
+        const Baggage& baggage = lightest->second;
+        cout << "Lightest Baggage ID: " << baggage.id << endl;
+        cout << "Passenger Name: " << baggage.passengerName << endl;
+        cout << "Flight Number: " << baggage.flightNumber << endl;
+        cout << "Destination: " << baggage.destination << endl;
+        cout << "Timestamp: " << baggage.timestamp << endl;
+        cout << "Weight: " << baggage.weight << " kg" << endl;
+
+    }
+
+
+
+    // Function to display baggage within a specific weight range
+    void displayBaggageWithinWeightRange(double minWeight, double maxWeight) const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.weight >= minWeight && baggage.weight <= maxWeight)
+            {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+
+        if (!found)
+            {
+
+            cout << "No baggage found within the weight range " << minWeight << " kg to " << maxWeight << " kg." << endl;
+
+        }
+
+    }
+
+
+    // Function to calculate and display the average weight of all baggage
+    void displayAverageBaggageWeight() const
+    {
+
+        if (baggageMap.empty())
+            {
+
+            cout << "No baggage records found!" << endl;
+            return;
+
+        }
+
+        double totalWeight = 0;
+        for (const auto& entry : baggageMap)
+            {
+
+            totalWeight += entry.second.weight;
+
+        }
+        double averageWeight = totalWeight / baggageMap.size();
+        cout << "Average weight of all baggage: " << averageWeight << " kg" << endl;
+
+    }
+
+    // Function to search baggage by passenger name
+    void searchBaggageByName(const string& name) const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.passengerName == name)
+            {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No baggage found for passenger: " << name << endl;
+
+        }
+
+    }
+
+    // Function to display baggage information for a specific flight
+    void displayBaggageForFlight(const string& flightNumber) const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.flightNumber == flightNumber) {
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+               cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No baggage found for flight number: " << flightNumber << endl;
+
+        }
+
+    }
+
+    // Function to display the heaviest baggage for a specific flight
+    void displayHeaviestBaggageForFlight(const string& flightNumber) const
+    {
+
+        bool found = false;
+        double maxWeight = -1;
+        Baggage heaviestBaggage;
+
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.flightNumber == flightNumber && baggage.weight > maxWeight) {
+                maxWeight = baggage.weight;
+                heaviestBaggage = baggage;
+                found = true;
+
+            }
+
+        }
+
+        if (found)
+            {
+
+            cout << "Heaviest Baggage for Flight Number " << flightNumber << ":\n";
+            cout << "Baggage ID: " << heaviestBaggage.id << endl;
+            cout << "Passenger Name: " << heaviestBaggage.passengerName << endl;
+            cout << "Flight Number: " << heaviestBaggage.flightNumber << endl;
+            cout << "Destination: " << heaviestBaggage.destination << endl;
+            cout << "Timestamp: " << heaviestBaggage.timestamp << endl;
+            cout << "Weight: " << heaviestBaggage.weight << " kg" << endl;
+        }
+        else
+            {
+
+            cout << "No baggage found for flight number: " << flightNumber << endl;
+
+        }
+
+    }
+
+    // Function to display the lightest baggage for a specific flight
+    void displayLightestBaggageForFlight(const string& flightNumber) const
+    {
+
+        bool found = false;
+        double minWeight = numeric_limits<double>::max();
+        Baggage lightestBaggage;
+
+
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.flightNumber == flightNumber && baggage.weight < minWeight)
+            {
+
+                minWeight = baggage.weight;
+                lightestBaggage = baggage;
+                found = true;
+
+            }
+
+        }
+
+        if (found)
+            {
+
+            cout << "Lightest Baggage for Flight Number " << flightNumber << ":\n";
+            cout << "Baggage ID: " << lightestBaggage.id << endl;
+            cout << "Passenger Name: " << lightestBaggage.passengerName << endl;
+            cout << "Flight Number: " << lightestBaggage.flightNumber << endl;
+            cout << "Destination: " << lightestBaggage.destination << endl;
+            cout << "Timestamp: " << lightestBaggage.timestamp << endl;
+            cout << "Weight: " << lightestBaggage.weight << " kg" << endl;
+
+        } else
+        {
+
+            cout << "No baggage found for flight number: " << flightNumber << endl;
+
+        }
+
+    }
+
+    // Function to display sorted baggage information by timestamp
+    void displaySortedBaggageByTimestamp()
+    {
+
+        vector<Baggage> sortedBaggage = sortBaggageByTimestamp();
+        for (const auto& baggage : sortedBaggage)
+            {
+
+            cout << "Baggage ID: " << baggage.id << endl;
+            cout << "Passenger Name: " << baggage.passengerName << endl;
+            cout << "Flight Number: " << baggage.flightNumber << endl;
+            cout << "Destination: " << baggage.destination << endl;
+            cout << "Timestamp: " << baggage.timestamp << endl;
+            cout << "Weight: " << baggage.weight << " kg" << endl;
+            cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+            cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+            cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+            cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+            cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+            cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+            cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+            cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+            cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+            cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+            cout << "-----------------------------" << endl;
+
+        }
+
+    }
+
+    // Function to filter and display baggage by destination
+    void filterBaggageByDestination(const string& destination) const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.destination == destination)
+            {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No baggage found for destination: " << destination << endl;
+
+        }
+
+    }
+
+    // Function to display laptop bags
+    void displayLaptopBags() const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap) {
+            const Baggage& baggage = entry.second;
+            if (baggage.isLaptopBag) {
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No laptop bags found!" << endl;
+
+        }
+
+    }
+
+    // Function to display tiffin bags
+    void displayTiffinBags() const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.isTiffinBag) {
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance:cout << Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No tiffin bags found!" << endl;
+
+        }
+    }
+
+    // Function to display sports bags
+    void displaySportsBags() const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.isSportsBag) {
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No sports bags found!" << endl;
+
+        }
+
+    }
+
+    // Function to display musical instrument bags
+    void displayMusicalInstrumentBags() const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.isMusicalInstrumentBag)
+            {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+        {
+
+            cout << "No musical instrument bags found!" << endl;
+
+        }
+
+    }
+
+    // Function to display medical equipment bags
+    void displayMedicalEquipmentBags() const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.isMedicalEquipmentBag)
+                {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No medical equipment bags found!" << endl;
+
+        }
+
+    }
+
+    // Function to display handbags
+    void displayHandbags() const
+    {
+
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.isHandbag)
+            {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found)
+            {
+
+            cout << "No handbags found!" << endl;
+
+        }
+
+    }
+
+    // Function to display small suitcases
+    void displaySmallSuitcases() const
+{
+        bool found = false;
+        for (const auto& entry : baggageMap)
+            {
+
+            const Baggage& baggage = entry.second;
+            if (baggage.isSmallSuitcase)
+            {
+
+                cout << "Baggage ID: " << baggage.id << endl;
+                cout << "Passenger Name: " << baggage.passengerName << endl;
+                cout << "Flight Number: " << baggage.flightNumber << endl;
+                cout << "Destination: " << baggage.destination << endl;
+                cout << "Timestamp: " << baggage.timestamp << endl;
+                cout << "Weight: " << baggage.weight << " kg" << endl;
+                cout << "Is Damaged: " << (baggage.isDamaged ? "Yes" : "No") << endl;
+                cout << "Is Cabin Baggage: " << (baggage.isCabinBaggage ? "Yes" : "No") << endl;
+                cout << "Is Long Distance: " << (baggage.isLongDistance ? "Yes" : "No") << endl;
+                cout << "Is Laptop Bag: " << (baggage.isLaptopBag ? "Yes" : "No") << endl;
+                cout << "Is Tiffin Bag: " << (baggage.isTiffinBag ? "Yes" : "No") << endl;
+                cout << "Is Sports Bag: " << (baggage.isSportsBag ? "Yes" : "No") << endl;
+                cout << "Is Musical Instrument Bag: " << (baggage.isMusicalInstrumentBag ? "Yes" : "No") << endl;
+                cout << "Is Medical Equipment Bag: " << (baggage.isMedicalEquipmentBag ? "Yes" : "No") << endl;
+                cout << "Is Handbag: " << (baggage.isHandbag ? "Yes" : "No") << endl;
+                cout << "Is Small Suitcase: " << (baggage.isSmallSuitcase ? "Yes" : "No") << endl;
+                cout << "-----------------------------" << endl;
+                found = true;
+
+            }
+
+        }
+        if (!found) {
+            cout << "No small suitcases found!" << endl;
+        }
+    }
+
+    // Function to display total number of laptop bags
+    void displayTotalLaptopBags() const
+    {
+        int count = 0;
+        for (const auto& entry : baggageMap)
+            {
+            if (entry.second.isLaptopBag)
+            {
+                count++;
+            }
+        }
+        cout << "Total number of laptop bags: " << count << endl;
+    }
+
+    // Function to display total number of tiffin bags
+    void displayTotalTiffinBags() const
+    {
+        int count = 0;
+        for (const auto& entry : baggageMap)
+            {
+            if (entry.second.isTiffinBag)
+            {
+
+                count++;
+            }
+        }
+        cout << "Total number of tiffin bags: " << count << endl;
+    }
+
+    // Function to display total number of sports bags
+    void displayTotalSportsBags() const
+    {
+        int count = 0;
+        for (const auto& entry : baggageMap)
+            {
+            if (entry.second.isSportsBag)
+            {
+                count++;
+            }
+        }
+        cout << "Total number of sports bags: " << count << endl;
+    }
+
+    // Function to display total number of musical instrument bags
+    void displayTotalMusicalInstrumentBags() const {
+        int count = 0;
+        for (const auto& entry : baggageMap) {
+            if (entry.second.isMusicalInstrumentBag) {
+                count++;
+            }
+        }
+        cout << "Total number of musical instrument bags: " << count << endl;
+    }
+
+    // Function to display total number of medical equipment bags
+    void displayTotalMedicalEquipmentBags() const
+    {
+        int count = 0;
+        for (const auto& entry : baggageMap)
+            {
+            if (entry.second.isMedicalEquipmentBag)
+            {
+                count++;
+            }
+        }
+
+        cout << "Total number of medical equipment bags: " << count << endl;
+
+    }
+
+    // Function to display total number of handbags
+    void displayTotalHandbags() const
+    {
+        int count = 0;
+        for (const auto& entry : baggageMap)
+            {
+            if (entry.second.isHandbag)
+            {
+                count++;
+            }
+        }
+
+        cout << "Total number of handbags: " << count << endl;
+    }
+
+    // Function to display total number of small suitcases
+    void displayTotalSmallSuitcases() const
+    {
+        int count = 0;
+        for (const auto& entry : baggageMap)
+            {
+            if (entry.second.isSmallSuitcase)
+            {
+                count++;
+            }
+        }
+
+        cout << "Total number of small suitcases: " << count << endl;
+
+    }
+
+    // Function to save baggage data to a file
+    void saveToFile(const string& filename) const
+    {
+        ofstream outFile(filename);
+        if (!outFile)
+            {
+            cout << "Error opening file for writing!" << endl;
+            return;
+        }
+        for (const auto& entry : baggageMap)
+        {
+            const Baggage& baggage = entry.second;
+            outFile << baggage.id << "," << baggage.passengerName << "," << baggage.flightNumber << "," << baggage.destination << ","
+                    << baggage.timestamp << "," << baggage.weight << "," << baggage.isDamaged << "," << baggage.isCabinBaggage << ","
+                    << baggage.isLongDistance << "," << baggage.isLaptopBag << "," << baggage.isTiffinBag << ","
+                    << baggage.isSportsBag << "," << baggage.isMusicalInstrumentBag << "," << baggage.isMedicalEquipmentBag << ","
+                    << baggage.isHandbag << "," << baggage.isSmallSuitcase << endl;
+        }
+        cout << "Baggage data saved to " << filename << " successfully!" << endl;
+        outFile.close();
+
+    }
+
+    // Function to load baggage data from a file
+    void loadFromFile(const string& filename)
+    {
+        ifstream inFile(filename);
+        if (!inFile)
+            {
+            cout << "Error opening file for reading!" << endl;
+            return;
+        }
+        string line;
+        while (getline(inFile, line))
+        {
+            size_t pos1 = line.find(',');
+            size_t pos2 = line.find(',', pos1 + 1);
+            size_t pos3 = line.find(',', pos2 + 1);
+            size_t pos4 = line.find(',', pos3 + 1);
+            size_t pos5 = line.find(',', pos4 + 1);
+            size_t pos6 = line.find(',', pos5 + 1);
+            size_t pos7 = line.find(',', pos6 + 1);
+            size_t pos8 = line.find(',', pos7 + 1);
+            size_t pos9 = line.find(',', pos8 + 1);
+            size_t pos10 = line.find(',', pos9 + 1);
+            size_t pos11 = line.find(',', pos10 + 1);
+            size_t pos12 = line.find(',', pos11 + 1);
+            size_t pos13 = line.find(',', pos12 + 1);
+            size_t pos14 = line.find(',', pos13 + 1);
+            size_t pos15 = line.find(',', pos14 + 1);
+
+            string id = line.substr(0, pos1);
+            string passengerName = line.substr(pos1 + 1, pos2 - pos1 - 1);
+            string flightNumber = line.substr(pos2 + 1, pos3 - pos2 - 1);
+            string destination = line.substr(pos3 + 1, pos4 - pos3 - 1);
+            string timestamp = line.substr(pos4 + 1, pos5 - pos4 - 1);
+            double weight = stod(line.substr(pos5 + 1, pos6 - pos5 - 1));
+            bool isDamaged = line.substr(pos6 + 1, pos7 - pos6 - 1) == "1";
+            bool isCabinBaggage = line.substr(pos7 + 1, pos8 - pos7 - 1) == "1";
+            bool isLongDistance = line.substr(pos8 + 1, pos9 - pos8 - 1) == "1";
+            bool isLaptopBag = line.substr(pos9 + 1, pos10 - pos9 - 1) == "1";
+            bool isTiffinBag = line.substr(pos10 + 1, pos11 - pos10 - 1) == "1";
+            bool isSportsBag = line.substr(pos11 + 1, pos12 - pos11 - 1) == "1";
+            bool isMusicalInstrumentBag = line.substr(pos12 + 1, pos13 - pos12 - 1) == "1";
+            bool isMedicalEquipmentBag = line.substr(pos13 + 1, pos14 - pos13 - 1) == "1";
+            bool isHandbag = line.substr(pos14 + 1, pos15 - pos14 - 1) == "1";
+            bool isSmallSuitcase = line.substr(pos15 + 1) == "1";
+
+            Baggage baggage{id, passengerName, flightNumber, destination, timestamp, weight, isDamaged, isCabinBaggage, isLongDistance, isLaptopBag, isTiffinBag, isSportsBag, isMusicalInstrumentBag, isMedicalEquipmentBag, isHandbag, isSmallSuitcase};
+            baggageMap[id] = baggage;
+        }
+        cout << "Baggage data loaded from " << filename << " successfully!" << endl;
+        inFile.close();
+    }
+};
+
+int module4()
+{
+    BaggageHandlingSystem bhs;
+
+    while (true)
+        {
+
+        cout << "\nBaggage Handling System\n";
+        cout << "1. Add Baggage\n";
+        cout << "2. Remove Baggage\n";
+        cout << "3. Display Baggage Information\n";
+        cout << "4. Display All Baggage Information\n";
+        cout << "5. Search Baggage by Passenger Name\n";
+        cout << "6. Update Baggage Information\n";
+        cout << "7. Display Total Baggage Count\n";
+        cout << "8. Display Total Baggage Weight\n";
+        cout << "9. Display Heaviest Baggage\n";
+        cout << "10. Display Lightest Baggage\n";
+        cout << "11. Save to File\n";
+        cout << "12. Load from File\n";
+        cout << "13. Display Sorted Baggage by Timestamp\n";
+        cout << "14. Filter Baggage by Destination\n";
+        cout << "15. Display Average Baggage Weight\n";
+        cout << "16. Display Baggage for Specific Flight\n";
+        cout << "17. Display Heaviest Baggage for Specific Flight\n";
+        cout << "18. Display Lightest Baggage for Specific Flight\n";
+        cout << "19. Display Baggage within Weight Range\n";
+        cout << "20. Display Laptop Bags\n";
+        cout << "21. Display Tiffin Bags\n";
+        cout << "22. Display Total Laptop Bags\n";
+        cout << "23. Display Total Tiffin Bags\n";
+        cout << "24. Display Sports Bags\n";
+        cout << "25. Display Total Sports Bags\n";
+        cout << "26. Display Musical Instrument Bags\n";
+        cout << "27. Display Total Musical Instrument Bags\n";
+        cout << "28. Display Medical Equipment Bags\n";
+        cout << "29. Display Total Medical Equipment Bags\n";
+        cout << "30. Display Handbags\n";
+        cout << "31. Display Total Handbags\n";
+        cout << "32. Display Small Suitcases\n";
+        cout << "33. Display Total Small Suitcases\n";
+        cout << "34. Exit\n";
+        cout << "Enter your choice: ";
+
+        int choice;
+        cin >> choice;
+
+        if (cin.fail() || choice < 1 || choice > 34)
+            {
+            cin.clear(); // clear the error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // ignore invalid input
+            cout << "Invalid choice. Please choose a valid option." << endl;
+            continue;
+        }
+
+        switch (choice)
+        {
+
+
+            case 1:
+                {
+
+                string id, passengerName, flightNumber, destination;
+                double weight;
+                bool isLaptopBag, isTiffinBag, isSportsBag, isMusicalInstrumentBag, isMedicalEquipmentBag, isHandbag, isSmallSuitcase;
+                cout << "Enter Baggage ID: ";
+                cin >> id;
+                cin.ignore();
+                cout << "Enter Passenger Name: ";
+                getline(cin, passengerName);
+                cout << "Enter Flight Number: ";
+                getline(cin, flightNumber);
+                cout << "Enter Destination: ";
+                getline(cin, destination);
+                cout << "Enter Weight (in kg): ";
+                cin >> weight;
+                cout << "Is Laptop Bag? (1 for Yes, 0 for No): ";
+                cin >> isLaptopBag;
+                cout << "Is Tiffin Bag? (1 for Yes, 0 for No): ";
+                cin >> isTiffinBag;
+                cout << "Is Sports Bag? (1 for Yes, 0 for No): ";
+                cin >> isSportsBag;
+                cout << "Is Musical Instrument Bag? (1 for Yes, 0 for No): ";
+                cin >> isMusicalInstrumentBag;
+                cout << "Is Medical Equipment Bag? (1 for Yes, 0 for No): ";
+                cin >> isMedicalEquipmentBag;
+                cout << "Is Handbag? (1 for Yes, 0 for No): ";
+                cin >> isHandbag;
+                cout << "Is Small Suitcase? (1 for Yes, 0 for No): ";
+                cin >> isSmallSuitcase;
+                bhs.addBaggage(id, passengerName, flightNumber, destination, weight, isLaptopBag, isTiffinBag, isSportsBag, isMusicalInstrumentBag, isMedicalEquipmentBag, isHandbag, isSmallSuitcase);
+                break;
+            }
+            case 2:
+
+                {
+                string id;
+                cout << "Enter Baggage ID: ";
+                cin >> id;
+                bhs.removeBaggage(id);
+                break;
+            }
+            case 3:
+                {
+                string id;
+                cout << "Enter Baggage ID: ";
+                cin >> id;
+                bhs.displayBaggageInfo(id);
+                break;
+            }
+            case 4:
+                bhs.displayAllBaggageInfo();
+                break;
+            case 5:
+                {
+                string name;
+                cin.ignore();
+                cout << "Enter Passenger Name: ";
+                getline(cin, name);
+                bhs.searchBaggageByName(name);
+                break;
+            }
+            case 6:
+                 {
+                string id, newPassengerName, newFlightNumber, newDestination;
+                double newWeight;
+                bool newIsLaptopBag, newIsTiffinBag, newIsSportsBag, newIsMusicalInstrumentBag, newIsMedicalEquipmentBag, newIsHandbag, newIsSmallSuitcase;
+                cout << "Enter Baggage ID to update: ";
+                cin >> id;
+                cin.ignore();
+                cout << "Enter New Passenger Name: ";
+                getline(cin, newPassengerName);
+                cout << "Enter New Flight Number: ";
+                getline(cin, newFlightNumber);
+                cout << "Enter New Destination: ";
+                getline(cin, newDestination);
+                cout << "Enter New Weight (in kg): ";
+                cin >> newWeight;
+                cout << "Is Laptop Bag? (1 for Yes, 0 for No): ";
+                cin >> newIsLaptopBag;
+                cout << "Is Tiffin Bag? (1 for Yes, 0 for No): ";
+                cin >> newIsTiffinBag;
+                cout << "Is Sports Bag? (1 for Yes, 0 for No): ";
+                cin >> newIsSportsBag;
+                cout << "Is Musical Instrument Bag? (1 for Yes, 0 for No): ";
+                cin >> newIsMusicalInstrumentBag;
+                cout << "Is Medical Equipment Bag? (1 for Yes, 0 for No): ";
+                cin >> newIsMedicalEquipmentBag;
+                cout << "Is Handbag? (1 for Yes, 0 for No): ";
+                cin >> newIsHandbag;
+                cout << "Is Small Suitcase? (1 for Yes, 0 for No): ";
+                cin >> newIsSmallSuitcase;
+                bhs.updateBaggage(id, newPassengerName, newFlightNumber, newDestination, newWeight, newIsLaptopBag, newIsTiffinBag, newIsSportsBag, newIsMusicalInstrumentBag, newIsMedicalEquipmentBag, newIsHandbag, newIsSmallSuitcase);
+                break;
+            }
+            case 7:
+                bhs.displayTotalBaggageCount();
+                break;
+            case 8:
+                bhs.displayTotalBaggageWeight();
+                break;
+            case 9:
+                bhs.displayHeaviestBaggage();
+                break;
+            case 10:
+                bhs.displayLightestBaggage();
+                break;
+            case 11:
+                {
+
+                string filename;
+                cout << "Enter filename to save: ";
+                cin >> filename;
+                bhs.saveToFile(filename);
+                break;
+            }
+            case 12:
+                {
+                string filename;
+                cout << "Enter filename to load: ";
+                cin >> filename;
+                bhs.loadFromFile(filename);
+                break;
+            }
+            case 13:
+                bhs.displaySortedBaggageByTimestamp();
+                break;
+            case 14:
+                {
+                string destination;
+                cin.ignore();
+                cout << "Enter Destination: ";
+                getline(cin, destination);
+                bhs.filterBaggageByDestination(destination);
+                break;
+            }
+            case 15:
+                bhs.displayAverageBaggageWeight();
+                break;
+            case 16:
+
+                {
+                string flightNumber;
+                cout << "Enter Flight Number: ";
+                cin >> flightNumber;
+                bhs.displayBaggageForFlight(flightNumber);
+                break;
+            }
+            case 17:
+
+                {
+                string flightNumber;
+                cout << "Enter Flight Number: ";
+                cin >> flightNumber;
+                bhs.displayHeaviestBaggageForFlight(flightNumber);
+                break;
+            }
+            case 18:
+{
+                string flightNumber;
+                cout << "Enter Flight Number: ";
+                cin >> flightNumber;
+                bhs.displayLightestBaggageForFlight(flightNumber);
+                break;
+            }
+            case 19: {
+                double minWeight, maxWeight;
+                cout << "Enter Minimum Weight (in kg): ";
+                cin >> minWeight;
+                cout << "Enter Maximum Weight (in kg): ";
+                cin >> maxWeight;
+                bhs.displayBaggageWithinWeightRange(minWeight, maxWeight);
+                break;
+            }
+            case 20:
+                bhs.displayLaptopBags();
+                break;
+            case 21:
+                bhs.displayTiffinBags();
+                break;
+            case 22:
+                bhs.displayTotalLaptopBags();
+                break;
+            case 23:
+                bhs.displayTotalTiffinBags();
+                break;
+            case 24:
+                bhs.displaySportsBags();
+                break;
+            case 25:
+                bhs.displayTotalSportsBags();
+                break;
+            case 26:
+                bhs.displayMusicalInstrumentBags();
+                break;
+            case 27:
+                bhs.displayTotalMusicalInstrumentBags();
+                break;
+            case 28:
+                bhs.displayMedicalEquipmentBags();
+                break;
+            case 29:
+                bhs.displayTotalMedicalEquipmentBags();
+                break;
+            case 30:
+                bhs.displayHandbags();
+                break;
+            case 31:
+                bhs.displayTotalHandbags();
+                break;
+            case 32:
+                bhs.displaySmallSuitcases();
+                break;
+            case 33:
+                bhs.displayTotalSmallSuitcases();
+                break;
+            case 34:
+                cout << "Exiting the system. Goodbye!" << endl;
+                return 0;
+            default:
+                cout << "Invalid choice. Please choose a valid option." << endl;
+        }
+    }
+
+    return 0;
+}
+
+string getPasswordInput()
+{
+    string password = "";
+    char ch;
+
+    cout << "Enter password: ";
+    while ((ch = _getch()) != '\r')
+        { // '\r' is the Enter key
+        if (ch == '\b') { // Handle backspace
+            if (!password.empty())
+            {
+                password.pop_back();
+            }
+        }
+    else
+        {
+            password += ch;
+        }
+    }
+    cout << endl; // Move to the next line after password entry
+    return password;
+
+}
+int main()
+{
+    const string correctPassword = "Skyline123";
+    string enteredPassword = getPasswordInput();
+
+    if (enteredPassword == correctPassword)
+        {
+        cout << "\nAccess Granted.\n";
+            int c;
+
+    while (true)
+        { // Infinite loop to keep the program running
+        cout << "Enter your choice \n 1:Flight Information\n 2:Flight Routes Information\n 3:Booking And Tickets\n 4:Baggage Handling\n other to exit: ";
+        cin >> c;
+
+        // Check if input is valid
+        if (cin.fail())
+            {
+            cin.clear(); // Clear the error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Ignore invalid input
+            cout << "Invalid input. Please enter a number." << endl;
+            continue; // Restart the loop
+        }
+
+        cout << "You entered: " << c << endl;
+
+        switch (c)
+        {
+
+            case 1:
+                module1();
+                break; // Exit the switch and continue the loop
+            case 2:
+                module2();
+                break;
+             case 3:
+                module3();
+                break;
+             case 4:
+                module4();
+                break;
+            default:
+                cout << "Exiting the system" << endl;
+                return 0; // Exit the program
+
+        }
+    }
+
+    return 0;
+    }
+     else
+        {
+        cout << "\nAccess Denied.\n";
+    }
+
+    return 0;
+}
+</div>
+    
+    <h2>Code:</h2>
     <pre id="output"></pre>
 
     <script>
@@ -49,27 +6374,12 @@ int main() {
         editor.setTheme("ace/theme/monokai");
         editor.session.setMode("ace/mode/c_cpp");
 
-        document.getElementById("compileBtn").addEventListener("click", async () => {
-            const code = editor.getValue();
-            const outputElement = document.getElementById("output");
+        // Automatically display the code in the output area when the page loads
+        const code = editor.getValue();
+        const outputElement = document.getElementById("output");
 
-            // Send the code to a local script (Batch/Shell) to compile and run it
-            try {
-                const response = await fetch("compile_cplusplus.bat", {  // For Windows use .bat, for Linux use .sh
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ code: code }),
-                });
-
-                const result = await response.json();
-                outputElement.textContent = result.output || result.error || "Compilation failed.";
-            } catch (error) {
-                outputElement.textContent = "Error: Unable to compile the code.";
-                console.error(error);
-            }
-        });
+        // Display the code in the output section
+        outputElement.textContent = code;
     </script>
 </body>
 </html>
