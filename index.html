@@ -42,20 +42,65 @@
             display: block;
             object-fit: cover;
         }
+
+        /* Hamburger Menu Styles */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .hamburger div {
+            width: 30px;
+            height: 4px;
+            background-color: #fff;
+            margin: 4px 0;
+            transition: all 0.3s ease;
+        }
         nav {
-            margin-top: 20px;
+            display: none;
+            flex-direction: column;
+            background: #6a1b9a;
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
         nav a {
             color: #fff;
             text-decoration: none;
-            margin: 0 15px;
-            font-weight: bold;
-            font-size: 1rem;
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        nav a:last-child {
+            border-bottom: none;
         }
         nav a:hover {
-            text-decoration: underline;
+            background: #d32f2f;
         }
-        /* Main Container */
+
+        /* Show the nav on toggle */
+        nav.active {
+            display: flex;
+        }
+
+        /* Media Query for Hamburger Menu */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            nav {
+                position: absolute;
+                top: 60px;
+                right: 10px;
+                width: 200px;
+            }
+        }
+
+        /* Main Content Styling */
         .container {
             max-width: 1100px;
             margin: 40px auto;
@@ -73,10 +118,9 @@
         ul {
             list-style: none;
             padding: 0;
-            margin: 10px 0;
         }
         ul li {
-            padding: 8px 0;
+            margin-bottom: 10px;
             font-size: 1rem;
         }
         ul li strong {
@@ -100,63 +144,6 @@
             border-left: 4px solid #6a1b9a;
             color: #444;
         }
-        /* Contact Section */
-        .contact {
-            text-align: center;
-            margin-top: 40px;
-        }
-        .contact a {
-            text-decoration: none;
-            margin: 0 10px;
-            color: #6a1b9a;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        .contact a:hover {
-            color: #d32f2f;
-        }
-        .contact img {
-            width: 40px;
-            height: 40px;
-            margin: 0 10px;
-            vertical-align: middle;
-        }
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 10px;
-            background: #333;
-            color: #fff;
-            margin-top: 40px;
-        }
-        footer a {
-            color: #ffd700;
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-        /* Navigation Bar Styling */
-        .menu {
-            background: #e91e63;
-            padding: 10px;
-        }
-        .menu ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-        }
-        .menu ul li {
-            margin: 0 20px;
-        }
-        .menu ul li a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 1rem;
-        }
-        .menu ul li a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -166,68 +153,69 @@
         <img src="your-photo.jpg" alt="Profile Photo" class="profile-photo">
         <h1>Hello, I'm Vittal 👋</h1>
         <p>A passionate problem-solver & tech enthusiast</p>
-        <nav class="menu">
-            <ul>
-                <li><a href="Desc.html">Description</a></li>
-                <li><a href="Flight Information.html">Flight Info</a></li>
-                <li><a href="Flight Route Mangm.html">Flight Routes</a></li>
-                <li><a href="Booking.html">Booking</a></li>
-                <li><a href="Baggage Handling.html">Baggage</a></li>
-                <li><a href="Program.html">Code</a></li>
-            </ul>
+
+        <!-- Hamburger Menu -->
+        <div class="hamburger" id="hamburger">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav id="nav-menu">
+            <a href="Desc.html">Description</a>
+            <a href="Flight Information.html">Flight Info</a>
+            <a href="Flight Route Mangm.html">Flight Routes</a>
+            <a href="Booking.html">Booking</a>
+            <a href="Baggage Handling.html">Baggage</a>
+            <a href="Program.html">Code</a>
         </nav>
     </header>
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Projects Section -->
-        <section id="projects">
-            <h2>🛠️ Projects</h2>
-            <ul>
-                <li><strong>Project 1</strong>: Air Route System</li>
-            </ul>
-        </section>
+        <h2>Academic Details</h2>
+        <dl>
+            <dt>Course Name</dt>
+            <dd>Algorithmic Problem Solving</dd>
+            <dt>Course Code</dt>
+            <dd>24ECSC205</dd>
+            <dt>Name</dt>
+            <dd>Vittal</dd>
+            <dt>SRN</dt>
+            <dd>02FE23BCS055</dd>
+            <dt>University</dt>
+            <dd>KLE Technological University</dd>
+        </dl>
+        <blockquote>“The only way to do great work is to love what you do.” – Steve Jobs</blockquote>
+
+        <!-- Project Section -->
+        <h2>Projects</h2>
+        <ul>
+            <li><strong>Air Route System</strong>: A system designed to manage and optimize flight routes, ticketing, and baggage handling.</li>
+        </ul>
 
         <!-- Skills Section -->
-        <section id="skills">
-            <h2>🚀 Skills</h2>
-            <ul>
-                <li>C++, Python, C</li>
-                <li>Data Structures and Algorithms</li>
-            </ul>
-        </section>
-
-        <!-- About Section -->
-        <section id="about">
-            <h2>🌐 About Me</h2>
-            <dl>
-                <dt>Course Name</dt>
-                <dd>Algorithmic Problem Solving</dd>
-                <dt>Course Code</dt>
-                <dd>24ECSC205</dd>
-                <dt>Name</dt>
-                <dd>Vittal</dd>
-                <dt>SRN</dt>
-                <dd>02FE23BCS055</dd>
-                <dt>University</dt>
-                <dd>KLE Technological University</dd>
-            </dl>
-            <blockquote>“The only way to do great work is to love what you do.” – Steve Jobs</blockquote>
-        </section>
-
-        <!-- Contact Section -->
-        <section id="contact" class="contact">
-            <h2>📞 Contact Me</h2>
-            <a href="https://github.com/Vi-Ne" target="_blank">GitHub
-            </a>
-            <a href="https://www.linkedin.com/in/vittal-nesaragi/" target="_blank"> LinkedIn
-            </a>
-        </section>
+        <h2>Skills</h2>
+        <ul>
+            <li>Programming Languages: C++, Python, C</li>
+            <li>Core Concepts: Data Structures and Algorithms</li>
+        </ul>
     </div>
 
     <!-- Footer -->
     <footer>
         <p>&copy; 2025 Vittal | <a href="#contact">Contact Me</a></p>
     </footer>
+
+    <script>
+        // JavaScript for Toggle Menu
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+    </script>
 </body>
 </html>
