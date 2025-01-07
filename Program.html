@@ -19,6 +19,7 @@
             background: #f4f4f4;
             padding: 10px;
             border: 1px solid #ccc;
+            white-space: pre-wrap; /* Ensure long lines wrap */
         }
     </style>
 </head>
@@ -6365,7 +6366,7 @@ int main()
     return 0;
 }
 </div>
-    
+
     <h2>Code:</h2>
     <pre id="output"></pre>
 
@@ -6374,12 +6375,6 @@ int main()
         editor.setTheme("ace/theme/monokai");
         editor.session.setMode("ace/mode/c_cpp");
 
-        // Automatically display the code in the output area when the page loads
-        const code = editor.getValue();
-        const outputElement = document.getElementById("output");
-
-        // Display the code in the output section
-        outputElement.textContent = code;
     </script>
 </body>
 </html>
