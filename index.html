@@ -59,44 +59,51 @@
             margin: 4px 0;
             transition: all 0.3s ease;
         }
+
+        /* Navigation Menu */
         nav {
-            display: none;
-            flex-direction: column;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
             background: #6a1b9a;
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
         }
         nav a {
             color: #fff;
             text-decoration: none;
+            margin: 0 15px;
             padding: 10px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        nav a:last-child {
-            border-bottom: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.3s ease;
         }
         nav a:hover {
             background: #d32f2f;
+            border-radius: 5px;
         }
 
-        /* Show the nav on toggle */
-        nav.active {
-            display: flex;
-        }
-
-        /* Media Query for Hamburger Menu */
+        /* Responsive Navigation */
         @media (max-width: 768px) {
             .hamburger {
                 display: flex;
             }
             nav {
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                background: #6a1b9a;
                 position: absolute;
-                top: 60px;
+                top: 70px;
                 right: 10px;
                 width: 200px;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            }
+            nav.active {
+                display: flex;
+            }
+            nav a {
+                margin: 10px 0;
             }
         }
 
@@ -209,7 +216,7 @@
     </footer>
 
     <script>
-        // JavaScript for Toggle Menu
+        // JavaScript for Hamburger Toggle
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
 
