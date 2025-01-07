@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C++ Compiler</title>
+    <title>C++ Code Compiler</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
     <style>
         body {
@@ -29,7 +29,7 @@
 </head>
 <body>
     <h1>C++ Code Compiler</h1>
-    <div id="editor">// Write your C++ code here
+    <div id="editor">// Enter your C++ code here
 #include <iostream>
 using namespace std;
 
@@ -53,20 +53,14 @@ int main() {
             const code = editor.getValue();
             const outputElement = document.getElementById("output");
 
-            // Replace with your online compiler API endpoint
-            const apiUrl = "https://some-online-cpp-compiler-api.example/run";
-
+            // Send the code to a local script (Batch/Shell) to compile and run it
             try {
-                const response = await fetch(apiUrl, {
+                const response = await fetch("compile_cplusplus.bat", {  // For Windows use .bat, for Linux use .sh
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({
-                        language: "cpp",
-                        code: code,
-                        input: "" // You can also provide user input here if needed
-                    }),
+                    body: JSON.stringify({ code: code }),
                 });
 
                 const result = await response.json();
