@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C++ Compiler</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #editor {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>C++ Code Compiler</h1>
+    <div id="editor">// Write your C++ code here
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    cout << "Enter two numbers: ";
+    cin >> a >> b;
+    cout << "The sum is: " << a + b << endl;
+    return 0;
+}</div>
+    <button id="compileBtn">Compile and Run</button>
+    <h2>Output:</h2>
+    <pre id="output"></pre>
+
+    <script>
+        const editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/c_cpp");
+
+        document.getElementById("compileBtn").addEventListener("click", async () => {
+            const code = editor.getValue();
+            const outputElement = document.getElementById("output");
+
+            // Replace with your online compiler API endpoint
+            const apiUrl = "https://some-online-cpp-compiler-api.example/run";
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        language: "cpp",
+                        code: code,
+                        input: "" // You can also provide user input here if needed
+                    }),
+                });
+
+                const result = await response.json();
+                outputElement.textContent = result.output || result.error || "Compilation failed.";
+            } catch (error) {
+                outputElement.textContent = "Error: Unable to compile the code.";
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
